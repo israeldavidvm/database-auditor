@@ -19,16 +19,33 @@ class DatabaseAuditor {
 
     public $functionalDependencies;
 
+    public $joinsClusters;
+
+    public $databaseSchemaGenerators;
+    public $validationAlgorithms;
+
     public function __construct($metaInfoEnvFile=null) {
 
-        $this->universalRelationship=[];
-        $this->decompositionsByTable=[];
-        $this->functionalDependencies=[];
+        $this->reset();
+
+        $this->databaseSchemaGenerators=[];
 
         if($metaInfoEnvFile){
             $this->metaInfoEnvFile=$metaInfoEnvFile;
             $this->initDatabaseConnection($metaInfoEnvFile);
         }
+
+    }
+
+    public function reset() {
+
+        $this->universalRelationship=[];
+        $this->functionalDependencies=[];
+        $this->joinsClusters=[];
+
+        $this->decompositionsByTable=[];
+        $this->primaryKeysByTable=[];
+        $this->foreignKeysByTable=[];
 
     }
 
@@ -62,20 +79,27 @@ class DatabaseAuditor {
 
     }
 
-    public function reset() {
-
-        $this->universalRelationship=[];
-        $this->decompositionsByTable=[];
-        $this->functionalDependencies=[];
-
+    public function getTableNames(){
+        return array_keys($this->decompositionsByTable);
     }
 
-    public function generateDatabaseSchema($databaseSchemaGenerators){ 
+    public function generateDatabaseSchema(){ 
 
-        foreach ($databaseSchemaGenerators as $key => $databaseSchemaGenerator) {
+        foreach ($this->databaseSchemaGenerators as $key => $databaseSchemaGenerator) {
             $databaseSchemaGenerator->generate();
         } 
         
+
+    }
+
+    public function regenerateDatabaseSchemaFromListTableNames($listTableNames){
+
+        $this->reset();
+
+        foreach ($this->databaseSchemaGenerators as $key => $databaseSchemaGenerator) {
+            $databaseSchemaGenerator->regenerateFromListTableNames($listTableNames);
+        } 
+
 
     }
 
@@ -88,16 +112,15 @@ class DatabaseAuditor {
     }
 
 
-    public function executeValidationAlgorithm($validationAlgorithms){
+    public function executeValidationAlgorithm(){
 
-        foreach ($validationAlgorithms as $key => $validationAlgorithm) {
+        foreach ($this->validationAlgorithms as $key => $validationAlgorithm) {
             $validationAlgorithm->execute();
         } 
 
     }
 
     public function getfunctionalDependenciesProyectionInTable($tableColumns){
-
 
 
     }

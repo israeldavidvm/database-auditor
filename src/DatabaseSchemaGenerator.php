@@ -4,9 +4,9 @@ namespace Israeldavidvm\DatabaseAuditor;
 
 abstract class DatabaseSchemaGenerator
 {
-    public $databaseAuditor;
+    public DatabaseAuditor $databaseAuditor;
 
-    public function __construct($databaseAuditor) {
+    public function __construct(DatabaseAuditor $databaseAuditor) {
         $this->databaseAuditor = $databaseAuditor;
     }
 

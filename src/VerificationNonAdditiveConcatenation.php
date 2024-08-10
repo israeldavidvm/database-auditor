@@ -4,9 +4,29 @@ namespace Israeldavidvm\DatabaseAuditor;
 
 use  Israeldavidvm\DatabaseAuditor\ValidationAlgorithm;
 
-class NonAdditiveConcatenation extends ValidationAlgorithm {
+class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
     public function execute(){
+
+        $originalJoinsClusters=$this->databaseAuditor->joinsClusters;
+        $originalTables=$this->databaseAuditor->getTableNames();
+        
+        print("Creando agrupaciones de tablas para aplicarles a cada una el Algoritmo 11.1 de Verificación  de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE\n\n");
+
+        foreach($originalJoinsClusters as $cluster){
+
+            $this->databaseAuditor->regenerateDatabaseSchemaFromListTableNames($cluster);
+
+            $this->verificationNonAdditiveConcatenation();
+
+        }
+
+        $this->databaseAuditor->regenerateDatabaseSchemaFromListTableNames($originalTables);
+
+    }
+
+
+    public function verificationNonAdditiveConcatenation(){
 
         // loadInputFromDatabase($dataBaseconfig, $universalRelationship,$decompositionsByTableByTable);
 

@@ -42,7 +42,7 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
      * @param array $metaInfoClustersTables arreglo asociativo que 
      * contiene el modo de cluster(mode) y tablas de clústeres (tipo desconocido).
      */
-    public function __construct($databaseAuditor,$metaInfoEnvFile,$metaInfoClusterTables=null) {
+    public function __construct($databaseAuditor,$metaInfoEnvFile,$metaInfoClusterTables) {
         $this->databaseAuditor = $databaseAuditor;
         
         $this->databaseAuditor->initDatabaseConnection($metaInfoEnvFile);
@@ -52,14 +52,6 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
     
 
     public function generate(){
-        
-        if($this->metaInfoClusterTables==null){
-            throw new Exception(
-                "La propiedad \$this->metaInfoClusterTables de ".
-                __FUNCTION__.
-                " deberia estar definida antes de usar la funcion"
-            );
-        }
 
         try {
         
@@ -103,6 +95,8 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
                     $this->databaseAuditor->functionalDependencies[]=$functionalDependency;
                 }
 
+                $this->generateJoinsClusters();
+
                
         
             }
@@ -111,6 +105,13 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         }
 
         
+    }
+
+    public function regenerateFromListTableNames($listTableNames){
+        $this->metaInfoClusterTables=$this
+            ->listTableNamesToMetaInfoClusterTables($listTableNames);
+
+        $this->generate();
     }
         
 
@@ -257,13 +258,17 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         }
     }
 
-    public function generateMetaInfoJoinsClusters($initialMetaInfoClusterTables){
+    public function generateJoinsClusters($initialMetaInfoClusterTables=null){
+
+        if ($initialMetaInfoClusterTables==null) {
+            $initialMetaInfoClusterTables=$this->metaInfoClusterTables;
+        }
 
         $tables=$this->getTables(
             $initialMetaInfoClusterTables
         );
 
-        $metaInfoJoinsClusters=[];
+        $joinsClusters=[];
 
         foreach ($tables as $table) {
 
@@ -275,12 +280,12 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
                     continue;
                 }
 
-                $metaInfoJoinsClusters[]=[];
+                $joinsClusters[]=[];
 
-                $metaInfoJoinsClusters[count($metaInfoJoinsClusters)-1][]=$table;
+                $joinsClusters[count($joinsClusters)-1][]=$table;
 
                 foreach($tablesManyToMany as $tableManyToMany){
-                    $metaInfoJoinsClusters[count($metaInfoJoinsClusters)-1][]=$tableManyToMany;
+                    $joinsClusters[count($joinsClusters)-1][]=$tableManyToMany;
                 }
 
             }
@@ -296,9 +301,9 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 
             if($fks!=null){
 
-                $metaInfoJoinsClusters[]=[];
+                $joinsClusters[]=[];
 
-                $metaInfoJoinsClusters[count($metaInfoJoinsClusters)-1][]=$table;
+                $joinsClusters[count($joinsClusters)-1][]=$table;
 
                 foreach($fks as $fk){
 
@@ -306,22 +311,16 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
                         preg_replace('/_id$/', '', $fk)
                     );
 
-                    $metaInfoJoinsClusters[count($metaInfoJoinsClusters)-1][]=$referencedTable;
+                    $joinsClusters[count($joinsClusters)-1][]=$referencedTable;
                 }
             }
             
 
         }
 
-    $metaInfoJoinsClusters=array_map(
-        fn ($cluster)=>[
-            'mode'=>'include',
-            'tables'=>$cluster
-        ], 
-        $metaInfoJoinsClusters
-    );
+    $this->databaseAuditor->joinsClusters=$joinsClusters;
 
-    return $metaInfoJoinsClusters;
+    return $joinsClusters;
 
     }
 
@@ -336,6 +335,13 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         }
 
         return []; // Retorna null si no coincide
+    }
+
+    public function listTableNamesToMetaInfoClusterTables($listTableNames){
+        return [
+                'mode'=>'include',
+                'tables'=>$listTableNames
+        ];
     }
 }
 
