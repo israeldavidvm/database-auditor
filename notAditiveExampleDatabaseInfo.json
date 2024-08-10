@@ -1,0 +1,51 @@
+{
+    "universalRelationship": [
+        "dni",
+        "nombreE",
+        "numProyecto",
+        "nombreProyecto",
+        "ubicacionProyecto",
+        "horas"
+    ],
+    "decompositions": [
+        [
+            "nombreE",
+            "ubicacionProyecto"
+        ],
+        [
+            "dni",
+            "numProyecto",
+            "horas",
+            "nombreProyecto",
+            "ubicacionProyecto"
+        ]
+    ],
+    "functionalDependencies": [
+        {
+            "x": [
+                "dni"
+            ],
+            "y": [
+                "nombreE"
+            ]
+        },
+        {
+            "x": [
+                "numProyecto"
+            ],
+            "y": [
+                "nombreProyecto",
+                "ubicacionProyecto"
+            ]
+        },
+        {
+            "x": [
+                "dni",
+                "numProyecto"
+            ],
+            "y": [
+                "horas"
+            ]
+        }
+    ]
+}
