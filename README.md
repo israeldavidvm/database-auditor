@@ -24,7 +24,7 @@ data-auditor te ofrece un conjunto completo de herramientas para evaluar y mejor
 ## Challenges conquered / Desafíos Conquistados
 
 ## Features to implement / Caracteristicas a implementar
-
+- Deteccion de errores en el diseño de la base de datos que afecten el funcionamiento de los algoritmos
 - Valida que los nombres de tablas y atributos ingresados como entrada sean validos
 - Soporte a nombres a atributos, tablas, fk y pk no convencionales
 
@@ -51,7 +51,6 @@ En el siguiente diagrama de clases se veran las abstracciones clave en el sistem
 
 
 ``` mermaid
-
 ---
 title: database auditor
 ---
@@ -100,7 +99,7 @@ classDiagram
     note for ValidationAlgorithm "Proporciona la interfaz estrategia 
     que es común a todas las estrategias concretas 
     para la generacion de las 
-    validacione de la base de datos"
+    validaciones de la base de datos"
 
     class ValidationAlgorithm{
         <<Abstract>>
@@ -108,16 +107,29 @@ classDiagram
     }
 
     ValidationAlgorithm <|-- NonAdditiveConcatenation
+    ValidationAlgorithm <|-- VerificationBCNF
 
-    class NonAdditiveConcatenation{
+
+    class VerificationNonAdditiveConcatenation{
         +databaseAuditor
         +execute()
     }
 
+
     note for NonAdditiveConcatenation "Encapsula el Algoritmo 11.1 de Verificación 
 de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI 
 y SHAMKANT B. NAVATHE"
-    
+
+    class VerificationBCNF{
+        +databaseAuditor
+        +execute()
+    }
+
+    note for NonAdditiveConcatenation "Encapsula el Algoritmo que valida que cada 
+    descomposicion posea la BCNF 
+    en base a la definicion presentada 
+    por RAMEZ ELMASRI y SHAMKANT B. NAVATHE"
+
     DatabaseAuditor <.. Client
 
     class Client{
@@ -160,7 +172,7 @@ stateDiagram-v2
 
             if2 --> addManyManyTable : else
 
-            addManyManyTable: metaInfoClusterTables[last][]=manyToManytable
+            addManyManyTable: joinsClusters[last][]=manyToManytable
 
             addManyManyTable --> foreachRelationTables
 
@@ -168,7 +180,7 @@ stateDiagram-v2
 
             state foreachRelationTables {
             
-                addRelationTable: metaInfoClusterTables[last][]=relationtable
+                addRelationTable: joinsClusters[last][]=relationtable
 
                 [*] --> addRelationTable
 
@@ -195,14 +207,14 @@ stateDiagram-v2
 
             if3 --> [*] : else
 
-            addReferencingTable: metaInfoClusterTables[last][]=referencingTable
+            addReferencingTable: joinsClusters[last][]=referencingTable
             if3 --> addReferencingTable : fks!=null
 
             addReferencingTable  --> foreachFK
             note left of foreachFK : "Esta actividad se ejecuta por cada tabla que a la apunta una fk"
             state foreachFK {
             
-                addReferencedTable : metaInfoClusterTables[]=referencedTable
+                addReferencedTable : joinsClusters[]=referencedTable
 
                 [*] --> addReferencedTable
 
@@ -287,6 +299,61 @@ stateDiagram-v2
 
         }
 ```
+
+## Verification and Validation / Validacion y Verificacion
+
+### Formal validation / Validacion Formal
+
+#### getFunctionalDependenciesForBCNFInTable
+
+El objetivo de esta sección es demostrar que el algoritmo puede utilizarse para generar el conjunto de dependencias funcionales necesario para validar la BCNF (Forma Normal de Boyce-Codd).
+
+El nuevo algoritmo que presentaremos a continuación se basa en la idea de que, para aplicar la verificación de BCNF en cada descomposición, podemos utilizar el conjunto de dependencias funcionales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar la proyección del conjunto de dependencias funcionales para esa descomposición, ya que esta última opción resulta ser mucho más exigente en términos algorítmicos
+
+Para ello es importante tener en cuenta que 
+
+Un esquema de relación R está en BCNF si siempre que una dependencia funcional no trivial X → A se cumple en R, entonces X es una superclave de R. 
+
+##### BCNF Definition / Definicion BCNF
+
+![otra forma de expresar la bcnf](images/bcnf_definition.png)
+
+y que el conjunto de dependencias funcionales para una descomposicion es la proyeccion del conjunto de dependencias de la relacion universal proyectado para una descomposicion.
+
+Es decir
+
+![Definition of the projection of F on Ri](images/definition_projection_F_Ri.png)
+
+Donde F+ es la Clasura de un conjunto de dependencias funcionales
+
+##### Closing a set of Functional Dependencies / Clasura de un conjunto de dependencias funcionales
+
+Formalmente, el conjunto de todas las dependencias que incluyen F, junto con las dependencias que pueden inferirse de F, reciben el nombre de clausuras de F; está designada mediante F+.
+
+##### Inference Rules for Functional Dependencies / Reglas de inferencia para las dependencias funcionales
+
+Recordemos que las reglas de inferencia bien conocidas para las dependencias funcionales son
+![inference rules for functional dependencies](images/inference_rules_functional_dependencies.png)
+
+Habiendo dicho esto notese que para las reglas de inferencia sucede lo siguiente al ser aplicados sobre el algoritmo de bcnf
+
+###### Regla reflesiva
+
+Para el caso de la regla reflexiva  las dependencias funcionales generadas x->y requieren que x sea subconjunto de y de modo que solo genera dependencias triviales las cuales no se toman en cuenta en bcnf
+
+###### Reglas transitiva, de descomposicion y union 
+
+Para el caso de las reglas transitiva, de descomposicion y union el antecedente de las dependencias funcionales no cambia de manera que si el antecedente es super clave la descomposicion cumplira la regla de BCNF  en caso de que no sea super clave la descomposicion no cumplira la regla de BCNF es decir las descomposiciones inferidas con estas reglas no afectaran el resultado
+
+###### Reglas de de aumento y pseudo-transitividad
+
+Para el caso de las reglas de de aumento y pseudo-transitividad sucede que el antecedente X se une con otro conjunto W o Z  en cualquiera de los casos sucede que:
+Si x es super clave solo se podran inferir reglas en las que el antecedente siga siendo super clave
+Si x no es super clave se podran inferir reglas que sean super claves pero en caso de que x no sea super clave ya sabremos que por la definicion de BCNF esta forma no se cumple.
+
+En conclusion:
+Para el caso de la validacion de la BCNF podemos usar el
+
 
 ## Documentacion
 
@@ -394,16 +461,16 @@ genera los siguientes resultados que reflejan el join aditivo
 
 ##### Convenciones de nombres usada para la identificacion de elementos
 
-##### Llaves Primarias
+###### Llaves Primarias
 Todo atributo de nombre id 
 
 ###### Ejemplos
 id
 
-##### Llaves Foraneas
+###### Llaves Foraneas
 Todo atributo que posee la siguiente forma 
 ```
-<nombreTablaSigular>_[rol]_id 
+<nombreTablaSigular>[_<rol>]_id 
 
 Donde [rol] sirve para identificar a la entidad en las relaciones recursivas
 
@@ -411,12 +478,31 @@ Donde [rol] sirve para identificar a la entidad en las relaciones recursivas
 
 Coincide con la siguiente expresion regular
 ```
-^[a-zA-Z0-9ñ]+_?[a-zA-Z0-9ñ]*_id$
+^[a-zA-Z0-9ñ]+(?:_[a-zA-Z0-9ñ]+)?_id$
 ```
 ###### Ejemplos
-user_id
-taxonomy_child_id
-taxonomy_parent_id
+- user_id
+- taxonomy_child_id
+- taxonomy_parent_id
+
+### Validacion de los esquemas de base de datos
+
+El objetivo de esta libreria es proporcionar validaciones para los esquemas de la base de datos y para ello se utilizaran las siguientes estructuras:
+
+#### ValidationAlgorithm
+Proporciona la interfaz estrategia que es común a todas las estrategias concretas para la generacion de las validaciones de la base de datos
+
+##### VerificationNonAdditiveConcatenation
+
+Encapsula el Algoritmo 11.1 de Verificación  de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI y SHAMKANT B. NAVATHE
+
+##### VerificationBCNF
+
+Encapsula el Algoritmo que valida que cada  descomposicion posea la BCNF  en base a la definicion presentada  por RAMEZ ELMASRI y SHAMKANT B. NAVATHE
+
+Para el algoritmo se utilizar el conjunto de dependencias funcionales no triviales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar el conjunto de dependencias no triviales en la proyección del conjunto de dependencias funcionales para esa descomposición esto debido a que para fines del algoritmo para verificar la BCNF los conjuntos funcionan de forma equivalente.
+
+La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
 
 ### Ejemplos de uso
 

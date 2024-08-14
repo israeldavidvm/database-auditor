@@ -120,25 +120,179 @@ class DatabaseAuditor {
 
     }
 
-    public function getfunctionalDependenciesProyectionInTable($tableColumns){
 
+    /**
+     * Este metodo es una version simplificada de 
+     * getNotTrivialFunctionalDependenciesProyectionInTable
+     *
+     * Basicamente permite generar el conjunto de dependencias 
+     * funcionales necesarias para la entrada del algoritmo de verificacion de la forma 
+     * BCNF.
+     * 
+     * El objetivo del metodo es permitirno ejecutar el algoritmo de BCNF
+     * Sin tener que usar un algoritmo para generar la proyeccion del conjunto de dependencias funcionales 
+     * ni la clausura
+     *
+     * Algoritmos que si bien ya se estan desarrollando aun no estan 100% disponibles, notese que la 
+     * diferencia esta en que en vez de trabajar con la clausura del conjunto de dependencias funcionales
+     * Se trabaja con solo el conjutno de dependencias funcionales.
+     * La demostracion que garantiza el funcionamiento del algoritmo se
+     * presenta en el archivo README.md del proyecto     * 
+     */
+    public function getFunctionalDependenciesForBCNFInTable($tableColumns){
+
+        $functionalDependenciesProyection=$this->functionalDependencies;
+
+        $functionalDependenciesProyection=array_filter(
+            $functionalDependenciesProyection, 
+            function($functionalDependency) {
+                return !$this->isTrivialFunctionalDependency($functionalDependency);
+            }
+        );
+
+        $functionalDependenciesProyection=array_filter(
+            $functionalDependenciesProyection, 
+            function($functionalDependency) use($tableColumns) {
+                return $this->isFunctionalDependencyInTable($functionalDependency, $tableColumns);
+            }
+        );
+        
+        return $functionalDependenciesProyection;
+
+    }
+
+    public function getNotTrivialFunctionalDependenciesProyectionInTable($tableColumns){
+
+        $functionalDependenciesProyection=$this->closureOfASetOfFunctionalDependenciesWithoutTrivial($this->functionalDependencies);
+
+        $functionalDependenciesProyection=array_filter(
+            $functionalDependenciesProyection, 
+            function($functionalDependency) {
+                return !$this->isTrivialFunctionalDependency($functionalDependency);
+            }
+        );
+
+        $functionalDependenciesProyection=array_filter(
+            $functionalDependenciesProyection, 
+            function($functionalDependency) use($tableColumns) {
+                return $this->isFunctionalDependencyInTable($functionalDependency, $tableColumns);
+            }
+        );
+        
+        return $functionalDependenciesProyection;
 
     }
 
     public function isFunctionalDependencyInTable($functionalDependency,$tableColumns){
-        foreach($functionalDependency['x'] as $x){
-            if(!in_array($x,$tableColumns)){
-                return false;
-            }
-        }
+       
+        $xIsASubsetOfTable=$this->isASubset($functionalDependency['x'],$tableColumns);
 
-        foreach($functionalDependency['y'] as $y){
-            if(!in_array($y,$tableColumns)){
-                return false;
-            }
-        }
+        $yIsASubsetOfTable=$this->isASubset($functionalDependency['y'],$tableColumns);
 
-        return true;
+        return $xIsASubsetOfTable&&$yIsASubsetOfTable;
+    }
+
+    public function closureOfASetOfFunctionalDependenciesWithoutTrivial(array $functionalDependencies): array {
+        $closure = $functionalDependencies;
+    
+        do {
+            $oldClosure = $closure;
+            
+            //Esto cubre la inferencia transitiva tambien
+            $closure=$this->pseudotransitiveInference($closure);
+            $closure=$this->decompositionInference($closure);
+            //$closure=$this->unionInference($closure);
+
+            $closure=array_filter(
+                $closure, 
+                function($functionalDependency) {
+                    return !$this->isTrivialFunctionalDependency($functionalDependency);
+                }
+            );
+    
+        } while (!$this->areEqual($oldClosure,$closure));
+    
+        return $closure;
+    }
+
+    public function decompositionInference($functionalDependencies){
+        $closure = $functionalDependencies;
+
+        do {
+            $oldClosure = $closure;
+
+            foreach ($functionalDependencies as $dependency) {
+
+                foreach ($dependency['y'] as $y) {
+
+                    $closure = $this->union($closure,[[
+                        'x'=>$dependency['x'],
+                        'y'=>[$y]
+                    ]]);
+                            
+                }
+                
+            }
+        } while (!$this->areEqual($oldClosure,$closure));
+
+        return $closure;
+    }
+
+
+    public function pseudotransitiveInference($functionalDependencies){
+        $closure = &$functionalDependencies;
+
+        do {
+            $oldClosure = $closure;
+
+            foreach ($functionalDependencies as $exterDependency) {
+
+
+                foreach ($functionalDependencies as $interDependency) {
+
+
+                    if($this->isASubset($exterDependency['y'],$interDependency['x'])){
+                        
+                        $w=$this->difference($interDependency['x'],$exterDependency['y']);
+                        $wx=$this->union($w,$exterDependency['x']);
+
+                        $closure = $this->union($closure,[[
+                            'x'=>$wx,
+                            'y'=>$interDependency['y']
+                        ]]);
+                            
+                    }
+
+                }
+                
+            }
+        } while (!$this->areEqual($oldClosure,$closure));
+
+        return $closure;
+    }
+
+    public function isTrivialFunctionalDependency($functionalDependency){
+        return $this->isASubset($functionalDependency['y'], $functionalDependency['x']);
+    }
+
+    public function closureOfASetOfAttributes(array $atributes, array $functionalDependencies): array {
+        $closure = $atributes;
+    
+        do {
+            $oldClosure = $closure;
+    
+            foreach ($functionalDependencies as $dependency) {
+                $x = $dependency['x'];
+                $y = $dependency['y'];
+    
+                if($this->isASubset($x,$closure)){
+                    $closure = $this->union($closure,$y);
+                     
+                }
+            }
+        } while (!$this->areEqual($oldClosure,$closure));
+    
+        return $closure;
     }
 
     public function printSet($set,$setLabel=null,$sufix="\n"){
@@ -171,7 +325,7 @@ class DatabaseAuditor {
            $decompositions=$this->decompositionsByTable;
         }
 
-        print("\n");
+        //print("\n");
         print("D={\n\n");
 
         foreach ($decompositions as $decompositionKey => $decomposition) {
@@ -185,13 +339,33 @@ class DatabaseAuditor {
 
     }
 
-    public function printfunctionalDependencies($functionalDependencies=null){
+    public function printScheme($tableName,$attributes){
+
+
+        print("{$tableName}(");
+
+        foreach ($attributes as $attributeKey => $attribute) {
+            if($attributeKey!==array_key_last($attributes)){
+                print("$attribute, ");
+            }else {
+                print("$attribute)");
+            }
+
+        }
+
+        print("\n");
+
+    }
+
+    
+
+    public function printFunctionalDependencies($functionalDependencies=null){
 
         if($functionalDependencies==null){
             $functionalDependencies=$this->functionalDependencies;
         }
 
-        print("\n");
+        //print("\n");
         print("F={\n\n");
 
         foreach ($functionalDependencies as $dependencieKey => $dependencie) {
@@ -206,5 +380,38 @@ class DatabaseAuditor {
         print("\n");
 
     }
+
+    public function areEqual($set1,$set2){
+        return $this->isASubset($set1,$set2)&&$this->isASubset($set2,$set1);
+    }
+
+    public function isASubset($subSet,$set){
+        foreach($subSet as $x){
+            if(!in_array($x,$set)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function union($set,$addSet): Array{
+        foreach($addSet as $x){
+            if(!in_array($x,$set)){
+                $set[]=$x;
+            }
+        }
+        return $set;
+    }
+
+    public function difference($set,$subtractSet){
+        $result=[];
+        foreach($set as $x){
+            if(!in_array($x, $subtractSet)){
+                $result[]=$x;
+            }
+        }
+        return $result;
+    }
+
 
 }

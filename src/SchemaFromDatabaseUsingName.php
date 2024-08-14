@@ -89,9 +89,9 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
                     //echo "  - {$foreignKey['column_name']} -> {$foreignKey['foreign_table_name']}.{$foreignKey['foreign_column_name']}\n";
                 }
         
-                $trivialFunctionalDependenciesByTable=$this->getTrivialFunctionalDependenciesByTable($table);
+                $usualFunctionalDependenciesByTable=$this->getUsualFunctionalDependenciesByTable($table);
 
-                foreach ($trivialFunctionalDependenciesByTable as $functionalDependency) {
+                foreach ($usualFunctionalDependenciesByTable as $functionalDependency) {
                     $this->databaseAuditor->functionalDependencies[]=$functionalDependency;
                 }
 
@@ -169,13 +169,13 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
    
     public function getFKsByTable($tableName){
         $query = $this->databaseAuditor->pdo->prepare("
-                    SELECT kcu.column_name
-                    FROM 
-                        information_schema.key_column_usage kcu
-                    WHERE 
-                        kcu.column_name ~ '^[a-zA-Z0-9ñ]+_?[a-zA-Z0-9ñ]*_id$'
-                        AND
-                        kcu.table_name = :table
+        SELECT *
+            FROM 
+                information_schema.columns cl
+            WHERE 
+                cl.column_name ~ '^[a-zA-Z0-9ñ]+_?[a-zA-Z0-9ñ]*_id$'
+                AND
+                cl.table_name = :table
                 ");
         $query->execute(['table' => $tableName]);
 
@@ -189,13 +189,13 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 
     public function getPKByTable($tableName,$fullyQualifiedForm=false){
         $query = $this->databaseAuditor->pdo->prepare("
-            SELECT kcu.column_name
+            SELECT *
             FROM 
-                information_schema.key_column_usage kcu
+                information_schema.columns cl
             WHERE 
-                kcu.column_name ~ '^id$'
+                cl.column_name ~ '^id$'
                 AND
-                kcu.table_name = :table
+                cl.table_name = :table
         ");
         $query->execute(['table' => $tableName]);
 
@@ -214,19 +214,19 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 
     }
 
-    public function getTrivialFunctionalDependenciesByTable($tableName){
+    public function getUsualFunctionalDependenciesByTable($tableName){
         $primaryKeys=$this->getPKByTable($tableName,true);
     
-        $trivialFunctionalDependencies=[];
+        $usualFunctionalDependencies=[];
 
         foreach ($primaryKeys as $primaryKey) {
-            $trivialFunctionalDependencies[]=[
+            $usualFunctionalDependencies[]=[
                 'x'=>[$primaryKey],
-                'y'=>$this->databaseAuditor->decompositionsByTable[$tableName]
+                'y'=>$this->databaseAuditor->difference($this->databaseAuditor->decompositionsByTable[$tableName],[$primaryKey])
             ];
         }
 
-        return $trivialFunctionalDependencies;
+        return $usualFunctionalDependencies;
     }
 
     public function pluralToSingular($word) {
