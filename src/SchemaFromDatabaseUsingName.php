@@ -307,9 +307,7 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 
                 foreach($fks as $fk){
 
-                    $referencedTable=$this->singularToPlural(
-                        preg_replace('/_id$/', '', $fk)
-                    );
+                    $referencedTable=$this->getReferencedTableFromFk($fk);
 
                     $joinsClusters[count($joinsClusters)-1][]=$referencedTable;
                 }
@@ -324,14 +322,12 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 
     }
 
-    public function getTablesManyToManyRelationship($table) {
-        // Definir la expresión regular
-        $pattern = '/^([a-zA-Z0-9ñ]+)_([a-zA-Z0-9ñ]+)$/';
-        // Verificar si la tabla coincide con la expresión regular
-        if (preg_match($pattern, $table, $matches)) {
-            array_shift($matches);
+    public function getTablesManyToManyRelationship($tableName) {
+        
+        if ($this->isTablesManyToManyRelationship($tableName)) {
+            $matches=explode("_",$tableName);
             $matches=array_map(fn ($table)=>$this->singularToPlural($table), $matches);
-            return $matches; // Retorna los grupos de captura
+            return $matches; 
         }
 
         return []; // Retorna null si no coincide
@@ -342,6 +338,30 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
                 'mode'=>'include',
                 'tables'=>$listTableNames
         ];
+    }
+
+    public function getReferencedTableFromFk($foreignKey){
+
+        $referencedTable=preg_replace('/_id$/', '', $foreignKey);
+        
+        if(!$this->isTablesManyToManyRelationship($referencedTable)){
+            $referencedTable=$this->singularToPlural($referencedTable);
+        }
+
+        return $referencedTable;
+    }
+
+    public function isTablesManyToManyRelationship($tableName){
+        
+        // Definir la expresión regular
+        $pattern = '/^([a-zA-Z0-9ñ]+)(?:_([a-zA-Z0-9ñ]+))+$/';
+        // Verificar si la tabla coincide con la expresión regular, 
+        //notese que no s4e usan los grupos de captura        
+        if (preg_match($pattern, $tableName)){
+            return true;
+        }else {
+            return false;
+        }
     }
 }
 

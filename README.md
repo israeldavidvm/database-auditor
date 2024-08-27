@@ -23,11 +23,13 @@ data-auditor te ofrece un conjunto completo de herramientas para evaluar y mejor
 
 ## Challenges conquered / Desafíos Conquistados
 
+- Demostracion formal de algoritmos
+
 ## Features to implement / Caracteristicas a implementar
 - Deteccion de errores en el diseño de la base de datos que afecten el funcionamiento de los algoritmos
 - Valida que los nombres de tablas y atributos ingresados como entrada sean validos
 - Soporte a nombres a atributos, tablas, fk y pk no convencionales
-
+- Soporte a relaciones recursivas
 ## Requirements Engineering / Ingenieria de Requerimientos
 
 ###  High Level or user requirements / Requerimientos de Alto Nivel o de Usuario
@@ -140,11 +142,11 @@ y SHAMKANT B. NAVATHE"
 
 ### Perspectiva de comportamiento
 
-#### DatabaseAuditor.generateMetaInfoJoinsClusters() process / Proceso de DatabaseAuditor.generateMetaInfoJoinsClusters()
+#### SchemaFromDatabaseUsingName.generateJoinsClusters process / Proceso de SchemaFromDatabaseUsingName.generateJoinsClusters
 
 ``` mermaid
 ---
-title: Proceso de SchemaFromDatabaseUsingName.generateMetaInfoJoinsClusters()
+title: Proceso de SchemaFromDatabaseUsingName.generateJoinsClusters
 ---
 stateDiagram-v2
     getTables: obtener las tablas
