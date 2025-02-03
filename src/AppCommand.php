@@ -23,13 +23,12 @@ class AppCommand extends Command
         // Define el nombre del comando
         $this->setName('app:audit-database')
             ->setDescription(
-                'Este comando te permite generar una documentacion ' .
-                'de tu base de datos postgresql en un archivo llamado ' .
-                'db-documentation.md'
+                'Este comando te permite realizar una serie de validaciones' .
+                'en tu base de datos redirige la salida para pasar la informacion a un archivo ' 
             )
-            ->setHelp('Este comando te permite generar una documentacion ' .
-                'de tu base de datos postgresql en un archivo llamado ' .
-                'db-documentation.md'
+            ->setHelp(
+                'Este comando te permite realizar una serie de validaciones' .
+                'en tu base de datos redirige la salida para pasar la informacion a un archivo ' 
             )
             ->addArgument(
                 'validationAlgorithms', 

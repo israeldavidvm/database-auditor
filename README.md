@@ -607,8 +607,7 @@ Para poder usar el programa solo necesitaras un archivo .env con la configuracio
 ```composer audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
 
 Description:
-  Este comando te permite generar una documentacion de tu base de datos postgresql en un archivo llamado db-documentation.md
-
+  Este comando te permite realizar una serie de validacionesen tu base de datos redirige la salida para pasar la informacion a un archivo 
 
 Arguments:
   validationAlgorithms           Valor de los tipos de algoritmo de validacion a aplicar separados por coma (,) Ejemplo VerificationBCNF,VerificationNonAdditiveConcatenation [default: "VerificationBCNF,VerificationNonAdditiveConcatenation"]
