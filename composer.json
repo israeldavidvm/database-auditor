@@ -1,10 +1,11 @@
 {
     "name": "israeldavidvm/database-auditor",
-    "description": "",
+    "description": "¡Optimiza tu diseño de bases de datos con data-auditor! ¿Quieres asegurarte de que tu base de datos esté libre de redundancias, anomalías y problemas de diseño? Con data-auditor, obtén las herramientas necesarias para validar formas normales, analizar dependencias funcionales y garantizar un diseño robusto y eficiente. ¡Prueba nuestra interfaz de línea de comandos y lleva tu base de datos al siguiente nivel!",
     "type": "library",
     "require": {
         "php": ">=5.4",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": ">=5.3.0",
+        "symfony/console": ">=5.1"
     },
     "license": "LGPL-3.0-or-later",
     "authors": [
@@ -18,5 +19,10 @@
         "psr-4": {
             "Israeldavidvm\\DatabaseAuditor\\": "src/"
         }
-    }
+    },
+    "scripts": {
+        "audit-database": "./bin/database-auditor  app:audit-database"
+    },
+    "bin": ["/bin/database-auditor"]
+
 }

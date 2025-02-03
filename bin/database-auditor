@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+
+<?php
+
+include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+
+use Symfony\Component\Console\Application;
+use Israeldavidvm\DatabaseAuditor\AppCommand; // Asegúrate que este namespace es correcto.
+
+$application = new Application();
+$application->add(new AppCommand()); // Añade tu comando
+$application->run();
+
+?>

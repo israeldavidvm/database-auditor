@@ -1,11 +1,64 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [data-auditor](#data-auditor)
+  - [¡Optimiza tu diseño de bases de datos con data-auditor!](#%C2%A1optimiza-tu-dise%C3%B1o-de-bases-de-datos-con-data-auditor)
+  - [Licencia](#licencia)
+  - [Caracteristicas ¿Qué te ofrece data-auditor?](#caracteristicas-%C2%BFqu%C3%A9-te-ofrece-data-auditor)
+  - [Challenges conquered / Desafíos Conquistados](#challenges-conquered--desaf%C3%ADos-conquistados)
+  - [Features to implement / Caracteristicas a implementar](#features-to-implement--caracteristicas-a-implementar)
+  - [Planning, Requirements Engineering and risk management / Planeacion, Ingenieria de Requerimientos y gestion del riesgo](#planning-requirements-engineering-and-risk-management--planeacion-ingenieria-de-requerimientos-y-gestion-del-riesgo)
+  - [Software Design / Diseño de Software](#software-design--dise%C3%B1o-de-software)
+    - [Perspectiva Estructural](#perspectiva-estructural)
+      - [Vista Logica de la Arquitectura del software](#vista-logica-de-la-arquitectura-del-software)
+    - [Perspectiva de comportamiento](#perspectiva-de-comportamiento)
+      - [SchemaFromDatabaseUsingName.generateJoinsClusters process / Proceso de SchemaFromDatabaseUsingName.generateJoinsClusters](#schemafromdatabaseusingnamegeneratejoinsclusters-process--proceso-de-schemafromdatabaseusingnamegeneratejoinsclusters)
+      - [SchemaFromDatabaseUsingName.generate() process / Proceso de SchemaFromDatabaseUsingName.generate()](#schemafromdatabaseusingnamegenerate-process--proceso-de-schemafromdatabaseusingnamegenerate)
+  - [Verification and Validation / Validacion y Verificacion](#verification-and-validation--validacion-y-verificacion)
+    - [Formal validation / Validacion Formal](#formal-validation--validacion-formal)
+      - [getFunctionalDependenciesForBCNFInTable](#getfunctionaldependenciesforbcnfintable)
+        - [BCNF Definition / Definicion BCNF](#bcnf-definition--definicion-bcnf)
+        - [Closing a set of Functional Dependencies / Clasura de un conjunto de dependencias funcionales](#closing-a-set-of-functional-dependencies--clasura-de-un-conjunto-de-dependencias-funcionales)
+        - [Inference Rules for Functional Dependencies / Reglas de inferencia para las dependencias funcionales](#inference-rules-for-functional-dependencies--reglas-de-inferencia-para-las-dependencias-funcionales)
+          - [Regla reflesiva](#regla-reflesiva)
+          - [Reglas transitiva, de descomposicion y union](#reglas-transitiva-de-descomposicion-y-union)
+          - [Reglas de de aumento y pseudo-transitividad](#reglas-de-de-aumento-y-pseudo-transitividad)
+  - [Documentacion](#documentacion)
+    - [Convenciones usadas durante la docuemntacion](#convenciones-usadas-durante-la-docuemntacion)
+    - [Generacion de esquemas](#generacion-de-esquemas)
+      - [DatabaseAuditor](#databaseauditor)
+      - [DatabaseSchemaGenerator](#databaseschemagenerator)
+      - [SchemaFromDBUsingName](#schemafromdbusingname)
+        - [Convenciones de nombres usada para la identificacion de elementos](#convenciones-de-nombres-usada-para-la-identificacion-de-elementos)
+          - [Llaves Primarias](#llaves-primarias)
+          - [Ejemplos](#ejemplos)
+          - [Llaves Foraneas](#llaves-foraneas)
+          - [Ejemplos](#ejemplos-1)
+    - [Validacion de los esquemas de base de datos](#validacion-de-los-esquemas-de-base-de-datos)
+      - [ValidationAlgorithm](#validationalgorithm)
+        - [VerificationNonAdditiveConcatenation](#verificationnonadditiveconcatenation)
+        - [VerificationBCNF](#verificationbcnf)
+    - [Uso](#uso)
+      - [Requisitos](#requisitos)
+        - [Instalacion](#instalacion)
+          - [Como usuario](#como-usuario)
+          - [Como biblioteca (Solo si quieres crear un programa que use la libreria)](#como-biblioteca-solo-si-quieres-crear-un-programa-que-use-la-libreria)
+        - [Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de ña base de datos el comportamiento por defecto)](#archivo-env-esto-es-necesario-cuando-se-quiere-generar-un-esquema-a-partir-de-%C3%B1a-base-de-datos-el-comportamiento-por-defecto)
+      - [Uso desde la interfaz de linea de comandos](#uso-desde-la-interfaz-de-linea-de-comandos)
+    - [Make a donation. Your contribution will make a difference.](#make-a-donation-your-contribution-will-make-a-difference)
+    - [Find me on:](#find-me-on)
+  - [Technologies used / Tecnologias usadas](#technologies-used--tecnologias-usadas)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 # data-auditor
 
 [Readme version in English](./README-EN.md)
 
-## data-auditor: Lleva tu diseño de bases de datos al siguiente nivel
-
-Data-auditor es una herramienta de software libre diseñada para mejorar significativamente la calidad de tus diseños de bases de datos. Al realizar una serie de validaciones rigurosas, como la comprobación de las formas normales y la verificación de la propiedad de concatenación no aditiva, data-auditor te ayuda a identificar y corregir potenciales problemas en tu esquema de datos.
+## ¡Optimiza tu diseño de bases de datos con data-auditor!
+¿Quieres asegurarte de que tu base de datos esté libre de redundancias, anomalías y problemas de diseño? Con data-auditor, obtén las herramientas necesarias para validar formas normales, analizar dependencias funcionales y garantizar un diseño robusto y eficiente. ¡Prueba nuestra interfaz de línea de comandos y lleva tu base de datos al siguiente nivel!
 
 ## Licencia
 
@@ -13,13 +66,17 @@ Este código tiene licencia bajo la licencia pública general de GNU versión 3.
 
 ## Caracteristicas ¿Qué te ofrece data-auditor?
 
-data-auditor te ofrece un conjunto completo de herramientas para evaluar y mejorar la calidad de tu diseño de base de datos. Algunas de sus principales características incluyen:
+data-auditor es una herramienta integral diseñada para evaluar y optimizar la calidad de tus diseños de bases de datos. Ofrece un conjunto de funcionalidades avanzadas que incluyen:
 
-- Validación de formas normales: Verifica si tu diseño cumple con las primeras tres formas normales, lo que es esencial para evitar la redundancia y las anomalías de actualización.
+Validación de formas normales: Asegura que tu diseño cumpla con las primeras tres formas normales, minimizando la redundancia y evitando anomalías en las actualizaciones.
 
-- Comprobación de la propiedad de concatenación no aditiva: Identifica posibles problemas de diseño que podrían llevar a resultados inesperados en las consultas.
+Comprobación de la propiedad de concatenación no aditiva: Detecta posibles problemas de diseño que podrían afectar los resultados de las consultas.
 
-- Análisis de dependencias funcionales: Te ayuda a comprender las relaciones entre los atributos de tus tablas.
+Análisis de dependencias funcionales: Facilita la comprensión de las relaciones entre los atributos de las tablas, permitiendo un diseño más robusto y eficiente.
+
+Interfaz de línea de comandos: Proporciona una forma sencilla y directa de utilizar la librería, ideal para integración en flujos de trabajo automatizados.
+
+Con data-auditor, podrás garantizar un diseño de base de datos sólido, eficiente y libre de errores comunes.
 
 ## Challenges conquered / Desafíos Conquistados
 
@@ -30,18 +87,12 @@ data-auditor te ofrece un conjunto completo de herramientas para evaluar y mejor
 - Valida que los nombres de tablas y atributos ingresados como entrada sean validos
 - Soporte a nombres a atributos, tablas, fk y pk no convencionales
 - Soporte a relaciones recursivas
-## Requirements Engineering / Ingenieria de Requerimientos
 
-###  High Level or user requirements / Requerimientos de Alto Nivel o de Usuario
+## Planning, Requirements Engineering and risk management / Planeacion, Ingenieria de Requerimientos y gestion del riesgo
 
-#### Functional requirements / Requerimientos funcionales
-#### Non -functional requirements / Requerimientos no funcionales
+Estas secciones del proyecto se llevara por medio de un sitio en notion de forma que puedan ser facilmente accesibles por el personal no tecnico.
 
-### Low Level or System Requirements / Requerimientos de Bajo Nivel o de Sistema
-
-#### Functional requirements / Requerimientos funcionales
-#### Non -functional requirements / Requerimientos no funcionales
-
+Solicita el link de acceso al personal autorizado
 
 ## Software Design / Diseño de Software
 
@@ -506,134 +557,72 @@ Para el algoritmo se utilizar el conjunto de dependencias funcionales no trivial
 
 La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
 
-### Ejemplos de uso
+### Uso
 
-#### Almacenar la url de las imagenes en la bd:
+#### Requisitos 
 
-Para almacenar una imagen responsive en la base de datos de una aplicacion laravel  se recomienda usar 
+##### Instalacion 
 
-```
-NameHelper::generateLaravelConvetionalResponsiveImageDirUrl($imageName)
-```
+###### Como usuario
 
-Lo que generara una url de imagen como 
-```/storage/images/imagen/```
+composer install israeldavidvm/database-auditor
 
-Para el caso de imagenes no responsivas
+composer global require israeldavidvm/database-auditor
 
-```
-NameHelper::generateLaravelConvetionalImageUrl($imageName)
-```
+composer require israeldavidvm/database-auditor
 
-Lo que generara una url de imagen como 
-```/storage/images/imagen/imagen.jpg```
 
-#### Recuperar imagenes en la bd:
+###### Como biblioteca (Solo si quieres crear un programa que use la libreria)
+composer require israeldavidvm/database-auditor
 
-Notese que las imagenes responsives estan almacenadas en un directorio
+##### Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de ña base de datos el comportamiento por defecto)
 
-De manera que los nombres para cada una de las imagenes responsive deben obtenerse por medio de
+Establece una configuracion en el archivo .env. como la siguiente
 
 ```
-NameHelper::generateResponsiveImageUrls($imageName, $baseUrl);
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=<DatabaseName>
+DB_USERNAME=<UserName>
+DB_PASSWORD=<password>
+
 ```
 
-o 
+#### Uso desde la interfaz de linea de comandos 
 
-```
-NameHelper::generateConvetionalResponsiveImageUrls($imageName,$baseUrl)
-```
+Para poder usar el programa solo necesitaras un archivo .env con la configuracion de tu base de datos como se especifico anteriormente y ejecutar el comando
 
-O 
-```
-NameHelper::generateLaravelConvetionalResponsiveImageUrls($imageName)
-```
-#### Mas ejemplos de uso
-```
-Probando la salida de los metodos con
+**Si es incluido en un proyecto por medio de require con el global (composer global require israeldavidvm/database-auditor)**
 
-$fileLocator='/imagen.png'
-$baseUrl='/cachapa/'
+```~/.config/composer/vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
 
-NameHelper::generateLaravelConvetionalResponsiveImageUrls('/imagen.png')=[
-/storage/images/imagen/imagen.png
-/storage/images/imagen/360-imagen.png
-/storage/images/imagen/720-imagen.png
-/storage/images/imagen/1080-imagen.png
-/storage/images/imagen/1440-imagen.png
-/storage/images/imagen/1800-imagen.png
-/storage/images/imagen/2160-imagen.png
-/storage/images/imagen/2880-imagen.png
-/storage/images/imagen/3600-imagen.png
-/storage/images/imagen/4320-imagen.png
-]
-NameHelper::generateLaravelConvetionalResponsiveImageDirUrl('/imagen.png')=/storage/images/imagen
-NameHelper::generateLaravelConvetionalImageUrl('/imagen.png')=/storage/images/imagen/imagen.png
-NameHelper::generateLaravelConvetionalImagePath('/imagen.png')=/images/imagen/imagen.png
-NameHelper::generateConvetionalResponsiveImageUrls('/imagen.png','/cachapa/')=[
-/cachapa/imagen/imagen.png
-/cachapa/imagen/360-imagen.png
-/cachapa/imagen/720-imagen.png
-/cachapa/imagen/1080-imagen.png
-/cachapa/imagen/1440-imagen.png
-/cachapa/imagen/1800-imagen.png
-/cachapa/imagen/2160-imagen.png
-/cachapa/imagen/2880-imagen.png
-/cachapa/imagen/3600-imagen.png
-/cachapa/imagen/4320-imagen.png
-]
-NameHelper::generateConvetionalImageUrl('/imagen.png','/cachapa/')=/cachapa/imagen/imagen.png
-NameHelper::generateResponsiveImageUrls('/imagen.png','/cachapa/')=[
-/cachapa/imagen.png
-/cachapa/360-imagen.png
-/cachapa/720-imagen.png
-/cachapa/1080-imagen.png
-/cachapa/1440-imagen.png
-/cachapa/1800-imagen.png
-/cachapa/2160-imagen.png
-/cachapa/2880-imagen.png
-/cachapa/3600-imagen.png
-/cachapa/4320-imagen.png
-]
-NameHelper::generateConvetionalImageDirUrl('/imagen.png','/cachapa/')=/cachapa/imagen
-NameHelper::generateImageUrl('/imagen.png','/cachapa/')=/cachapa/imagen.png
-NameHelper::generateResponsiveImageNames('/imagen.png')=[
-/imagen.png
-360-/imagen.png
-720-/imagen.png
-1080-/imagen.png
-1440-/imagen.png
-1800-/imagen.png
-2160-/imagen.png
-2880-/imagen.png
-3600-/imagen.png
-4320-/imagen.png
-]
-NameHelper::transformNameToUrlName('/imagen.png')=imagen.png
-NameHelper::getFileOrDirName('/imagen.png')=imagen.png
-NameHelper::getFileOrDirNameWithoutExt('/imagen.png')=imagen
-NameHelper::getExtOfFile('/imagen.png')=png
+**Si es incluido en un proyecto por medio de require sin el global (composer require israeldavidvm/database-auditor)**
 
-Probando la salida de los metodos con
+```./vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
 
-$fileLocator='/imagen/'
-$baseUrl='/cachapa/'
+**Si es instalado por medio de install o se parte de la raiz del proyecto (composer install israeldavidvm/database-auditor)**
 
-$imageName='imagen' de generateResponsiveImageNames pareciera no tener una extension
-NameHelper::generateLaravelConvetionalResponsiveImageDirUrl('/imagen/')=/storage/images/imagen
-NameHelper::generateLaravelConvetionalImageUrl('/imagen/')=/storage/images/imagen/imagen
-NameHelper::generateLaravelConvetionalImagePath('/imagen/')=/images/imagen/imagen
-$imageName='imagen' de generateResponsiveImageNames pareciera no tener una extension
-NameHelper::generateConvetionalImageUrl('/imagen/','/cachapa/')=/cachapa/imagen/imagen
-$imageName='imagen' de generateResponsiveImageNames pareciera no tener una extension
-NameHelper::generateConvetionalImageDirUrl('/imagen/','/cachapa/')=/cachapa/imagen
-NameHelper::generateImageUrl('/imagen/','/cachapa/')=/cachapa/imagen
-$imageName='/imagen/' de generateResponsiveImageNames pareciera no tener una extension
-NameHelper::transformNameToUrlName('/imagen/')=imagen
-NameHelper::getFileOrDirName('/imagen/')=imagen
-NameHelper::getFileOrDirNameWithoutExt('/imagen/')=imagen
-$fileLocatorName='/imagen/' de getExtOfFile pareciera no tener una extension
-```
+```composer audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+
+Description:
+  Este comando te permite generar una documentacion de tu base de datos postgresql en un archivo llamado db-documentation.md
+
+
+Arguments:
+  validationAlgorithms           Valor de los tipos de algoritmo de validacion a aplicar separados por coma (,) Ejemplo VerificationBCNF,VerificationNonAdditiveConcatenation [default: "VerificationBCNF,VerificationNonAdditiveConcatenation"]
+  databaseSchemaGeneratorConfig  Cadena que especifica el databaseSchemaGenerator y su configuracionDonde la cadena tiene un formato como el siguiente<databaseSchemaGenerator>|<config>Donde <databaseSchemaGenerator> es el Valor del tipo de generador de esquema de base de datoscomo por ejemplo SchemaFromDatabaseUsingNamey <config> es la configuracion del generador de esquema de base de datos que depemndera del tipo para el caso de SchemaFromDatabaseUsingName tiene el formato <mode>|<tables>|<path> [default: "SchemaFromDatabaseUsingName|exclude|users,migrations,password_resets,failed_jobs,personal_access_tokens,taxonomy_taxonomy|./.env"]
+
+Options:
+  -h, --help                     Display help for the given command. When no command is given display help for the list command
+      --silent                   Do not output any message
+  -q, --quiet                    Only errors are displayed. All other output is suppressed
+  -V, --version                  Display this application version
+      --ansi|--no-ansi           Force (or disable --no-ansi) ANSI output
+  -n, --no-interaction           Do not ask any interactive question
+  -v|vv|vvv, --verbose           Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
 
 ### Make a donation. Your contribution will make a difference.
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/israeldavidvm)
