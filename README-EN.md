@@ -58,6 +58,60 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+<!-Start doctoc generated touch please keep comment here to allow Auto Update->
+<!-Don's Edit This Section, Instead Re-Run Doctor to Update->
+** Table of content ***generated with [doctoc] (https://github.com/thlorenz/doctoc)*
+
+-[Data-Auditor] (#Data-Auditor)
+-[Optimize your database design with data-Auditor!] (#%C2%A1opimiza-tu-dise%c3%b1o-de-base-datos-with-data-Auditor)
+- [License] (#license)
+-[Characteristics What does Data-Auditor offer you?
+-[conquered challenges / conquered challenges] (#Challenges-Conquered-Disaf%C3%in-conquered)
+-[features to implement / characteristics to be implemented] (#features-to-implement-caracteristic-to-implement)
+-[Planning, Requirements Engineering and Risk Management / Planning, Requirements Engineering and Risk Management] (#Planning-Requirements-Engineering-And-Risk-Management-Planning-Ingenieria-De-Requerlations-Y-Gestion-Del-Riesgo )
+-[Software Design / Software Design] (#Software-Design-Dise%C3%B1O-De-Software)
+- [Structural Perspective] (#perspective-structural)
+-[Logic view of software architecture] (#-logic-of-the-architecture-del-software)
+-[behavior perspective] (#perspective-of-behavior)
+-[Schemafromdatabaseusingname.Generatejoinsclusters Process / SchemafromDatabaseusingname.
+-[schemafromdatabaseusingname.generate () process / process of schemafromdatabaseusingname.generate ()] (#schemaphomdatabaseusingnamenenerate-process-process-process-of-schemaphromdatabaseusingnamenene)
+-[Verification and Validation / Validation and Verification] (#Verification-And-Validation-Validation-Y-Verification)
+-[Formal Validation / Formal Validation] (#Formal-Validation-validacion-Formal)
+- [Getfunctional Dependenciesforbcnfintable] (#Getfunctional Dependenciesforbcnfintable)
+-[BCNF Definition / BCNF Definition] (#BCNF-Definition-Definition-BCNF)
+-[CLOSING A SET OF FUNCTIONAL DEPENDENCIES / CLASURA OF A SET OF FUNCTIONAL DEPENDENCES] (#CLOSING-A-SEET-OF-FUNCTIONAL-DEPENDENCIES-CLASSURA-OF-UN-CONCONT-OF-DEPENDENCES-FUNCTIONALS)
+-[Inference Rules for Functional dependence / Inference rules for functional dependencies] (#Inference-Rules-For-Functional-Dependencies-Rules-of-Inference-For-for-Dependencies-Functions)
+- [Reflective rule] (#rule-reflective)
+-[Transitive rules, decomposition and union] (#rules-transitory-of-dissemination-y-union)
+-[Increase and pseudo-transitivity rules] (#rules-of-aument-y-pseudo-transitivity)
+- [Documentation] (#Documentation)
+-[Conventions used during documentation] (#Conventions-Useas-During-Documentation)
+-[Generation of schemes] (#Generation-of-Schemes)
+- [databaseauditor] (#databaseauditor)
+- [databaseschemagenerator] (#databaseschemagenerator)
+- [Schemafromdbusingname] (#Schemafromdbusingname)
+-[Name conventions used for the identification of elements] (#conventions-of-numbers-for-for-identification-of-element)
+- [Primary keys] (#Keys-First)
+- [Examples] (#examples)
+- [Foraneal Keys] (#Key-Foreropes)
+- [Examples] (#examples-1)
+-[Validation of database schemes] (#Validation-of-Los-Schemes-Base-Dima)
+- [Validation algorithm] (#ValidationalGorithm)
+- [Verification
+- [VerificationBCNF] (#VerificationBCNF)
+- [Use] (#use)
+- [Requirements] (#requirements)
+- [Installation] (#installation)
+- [as a user] (#as-user)
+-[As a library (only if you want to create a program that uses library)] (#as-biblioteca-only-si-want-you-with-a-program-which-your-libreria)
+-[ scheme-to-part-of-%C3%B1a-base-datos-the-behavior-by-defect)
+-[Use from the command line interface] (#use-from-the-interfaz-of-line-de-compos)
+- [Make to Donation. Your Contribution Will Make A Difference.] (#Make-A-Donation-Your-Contribution-Will-Make-A-Difference)
+-[Find me on:] (#Find-me-on)
+-[Technologies used / used technologies] (#Technologies-ined-Tecnologias-Usadas)
+
+<!-End doctoc generated touch please keep comment here to allow Auto Update->
+
 
 # Data-Auditor
 
@@ -613,8 +667,7 @@ In order to use the program you will only need an .EV file with the configuratio
 `` Composer Audit-Database [<Validationalgorithms> [<databaseschemageneratoryconfig>]] `` ``
 
 Description:
-This command allows you
-
+This command allows you to make a series of validations in your database redirects the output to pass the information to a file
 
 Arguments:
 Validationalgorithms Value of the types of validation algorithm to apply separated by coma (,) Exam
