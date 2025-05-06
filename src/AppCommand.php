@@ -63,7 +63,7 @@ class AppCommand extends Command
 
         $this->databaseAuditor = new DatabaseAuditor;
 
-        $this->selectDatabaseSchemaGenerator($input);
+        $this->selectDatabaseSchemaGenerator($input,$output);
 
         $this->selectValidationAlgorithms($input);
 
@@ -72,14 +72,14 @@ class AppCommand extends Command
 
         $this->databaseAuditor->executeValidationAlgorithm();
 
-        // Mostrar mensaje de éxito
-        // $output->writeln('Se ha ejecutado los algoritmos de validacion');
+        //Mostrar mensaje de éxito
+        $output->writeln('Se ha ejecutado los algoritmos de validacion');
 
         // Devolver un código de estado (éxito)
         return Command::SUCCESS;
     }
 
-    public function selectDatabaseSchemaGenerator(InputInterface $input){
+    public function selectDatabaseSchemaGenerator(InputInterface $input, OutputInterface $output){
 
         $databaseSchemaGeneratorConfig= explode(
             '|', 

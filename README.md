@@ -78,6 +78,12 @@ Interfaz de línea de comandos: Proporciona una forma sencilla y directa de util
 
 Con data-auditor, podrás garantizar un diseño de base de datos sólido, eficiente y libre de errores comunes.
 
+## Justificacion
+
+Tener una base de datos mal diseñada puede ser una de las peores cosas a las que nos podemos enfrentar como desarrolladores, un mal diseño es capaz generarnos los peores dolores de cabeza, retrasos en el desarrollo del sistema o lo que es peor aun puede acabar con uno de los activos mas valiosos que puede tener una empresa la informacion.
+
+De manera que es necesario contar con metodos para garantizar el mejor diseño posible, dado lo laborioso de los metodos y la necesidad de respaldar la calidad del diseño se decidio dar comienzo a este programa para automatizar dicho proceso.
+
 ## Challenges conquered / Desafíos Conquistados
 
 - Demostracion formal de algoritmos
@@ -87,14 +93,104 @@ Con data-auditor, podrás garantizar un diseño de base de datos sólido, eficie
 - Valida que los nombres de tablas y atributos ingresados como entrada sean validos
 - Soporte a nombres a atributos, tablas, fk y pk no convencionales
 - Soporte a relaciones recursivas
+- Mejorar las funciones de conversion entre plural a singular en SchemaFromDatabaseUsingName
 
-## Planning, Requirements Engineering and risk management / Planeacion, Ingenieria de Requerimientos y gestion del riesgo
+## Uso
+
+### Requisitos 
+
+#### Instalacion 
+
+##### Como usuario
+
+composer install israeldavidvm/database-auditor
+
+composer global require israeldavidvm/database-auditor
+
+composer require israeldavidvm/database-auditor
+
+
+##### Como biblioteca (Solo si quieres crear un programa que use la libreria)
+composer require israeldavidvm/database-auditor
+
+#### Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de ña base de datos el comportamiento por defecto)
+
+Establece una configuracion en el archivo .env. como la siguiente
+
+```
+
+DB_CONNECTION=pgsql
+DB_HOST=<DatabaseHostIP>
+DB_PORT=5432
+DB_DATABASE=<DatabaseName>
+DB_USERNAME=<UserName>
+DB_PASSWORD=<password>
+
+```
+
+### Uso desde la interfaz de linea de comandos 
+
+Para poder usar el programa solo necesitaras un archivo .env con la configuracion de tu base de datos como se especifico anteriormente y ejecutar el comando
+
+**Si es incluido en un proyecto por medio de require con el global (composer global require israeldavidvm/database-auditor)**
+
+```~/.config/composer/vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+
+**Si es incluido en un proyecto por medio de require sin el global (composer require israeldavidvm/database-auditor)**
+
+```./vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+
+**Si es instalado por medio de install o se parte de la raiz del proyecto (composer install israeldavidvm/database-auditor)**
+
+```composer audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+
+Description:
+  Este comando te permite realizar una serie de validacionesen tu base de datos redirige la salida para pasar la informacion a un archivo 
+
+Arguments:
+  validationAlgorithms           Valor de los tipos de algoritmo de validacion a aplicar separados por coma (,) Ejemplo VerificationBCNF,VerificationNonAdditiveConcatenation [default: "VerificationBCNF,VerificationNonAdditiveConcatenation"]
+  databaseSchemaGeneratorConfig  Cadena que especifica el databaseSchemaGenerator y su configuracionDonde la cadena tiene un formato como el siguiente<databaseSchemaGenerator>|<config>Donde <databaseSchemaGenerator> es el Valor del tipo de generador de esquema de base de datoscomo por ejemplo SchemaFromDatabaseUsingName y <config> es la configuracion del generador de esquema de base de datos que dependera del tipo para el caso de SchemaFromDatabaseUsingName tiene el formato <mode>|<tables>|<path> [default: "SchemaFromDatabaseUsingName|exclude|users,migrations,password_resets,failed_jobs,personal_access_tokens,taxonomy_taxonomy|./.env"]
+
+Options:
+  -h, --help                     Display help for the given command. When no command is given display help for the list command
+      --silent                   Do not output any message
+  -q, --quiet                    Only errors are displayed. All other output is suppressed
+  -V, --version                  Display this application version
+      --ansi|--no-ansi           Force (or disable --no-ansi) ANSI output
+  -n, --no-interaction           Do not ask any interactive question
+  -v|vv|vvv, --verbose           Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+
+## Make a donation. Your contribution will make a difference.
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/israeldavidvm)
+[![Paypal](https://img.shields.io/badge/Paypal-@israeldavidvm-0077B5?style=for-the-badge&logo=paypal&logoColor=white&labelColor=101010)](https://paypal.me/israeldavidvm)
+[![Binance](https://img.shields.io/badge/Binance_ID-809179020-101010?style=for-the-badge&logo=binancel&logoColor=white&labelColor=101010)](https://www.binance.com/activity/referral-entry/CPA?ref=CPA_004ZGH9EIS)
+
+## Find me on:
+[![GITHUB](https://img.shields.io/badge/Github-israeldavidvm-gray?style=for-the-badge&logo=github&logoColor=white&labelColor=101010)](https://github.com/israeldavidvm)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-israeldavidvm-0077B5?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=101010)](https://www.linkedin.com/in/israeldavidvm/)
+[![Twitter](https://img.shields.io/badge/Twitter-@israeldavidvm-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=101010)](https://twitter.com/israeldavidvm)
+[![Facebook](https://img.shields.io/badge/Facebook-israeldavidvm-1877F2?style=for-the-badge&logo=facebook&logoColor=white&labelColor=101010)](https://www.facebook.com/israeldavidvm)
+[![Instagram](https://img.shields.io/badge/Instagram-@israeldavidvmv-gray?style=for-the-badge&logo=instagram&logoColor=white&labelColor=101010)](https://www.instagram.com/israeldavidvm/)
+[![TikTok](https://img.shields.io/badge/TikTok-@israeldavidvm-E4405F?style=for-the-badge&logo=tiktok&logoColor=white&labelColor=101010)](https://www.tiktok.com/@israeldavidvm)
+[![YouTube](https://img.shields.io/badge/YouTube-@israeldavidvm-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=101010)](https://www.youtube.com/channel/UCmZLFpEPNdwpJOhal0wry7A)
+
+
+## Planeacion, Ingenieria de requerimientos, gestion del riesgo y evolucion
 
 Estas secciones del proyecto se llevara por medio de un sitio en notion de forma que puedan ser facilmente accesibles por el personal no tecnico.
 
 Solicita el link de acceso al personal autorizado
 
-## Software Design / Diseño de Software
+## Diseño de Software
+
+### ¿Como funciona?
+
+Basicamente el programa funciona con los siguientes pasos
+
+1) Se escoje un mecanismo para generar las estructuras necesarias para los algoritmos
+
+2) Se aplican los algoritmos para verificar la base de datos 
 
 ### Perspectiva Estructural
 
@@ -353,7 +449,7 @@ stateDiagram-v2
         }
 ```
 
-## Verification and Validation / Validacion y Verificacion
+## Validacion y Verificacion
 
 ### Formal validation / Validacion Formal
 
@@ -361,7 +457,7 @@ stateDiagram-v2
 
 El objetivo de esta sección es demostrar que el algoritmo puede utilizarse para generar el conjunto de dependencias funcionales necesario para validar la BCNF (Forma Normal de Boyce-Codd).
 
-El nuevo algoritmo que presentaremos a continuación se basa en la idea de que, para aplicar la verificación de BCNF en cada descomposición, podemos utilizar el conjunto de dependencias funcionales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar la proyección del conjunto de dependencias funcionales para esa descomposición, ya que esta última opción resulta ser mucho más exigente en términos algorítmicos
+El nuevo algoritmo que presentaremos a continuación se basa en la idea de que, para aplicar la verificación de BCNF en cada descomposición, podemos utilizar el conjunto de dependencias funcionales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar la proyección del conjunto de dependencias funcionales para esa descomposición, ya que esta última opción resulta ser un conjunto mas complejo con el que trabajar
 
 Para ello es importante tener en cuenta que 
 
@@ -433,10 +529,11 @@ El + indica que la expresion se repite 1 o mas veces
 
 Si se quiere usar uno de los caracteres anteriores se debe de anteceder \ con 
 
-### Generacion de esquemas
+### Generacion de estructuras necesarias para los algoritmos
 
-Para que los algoritmos funcionen se debe de generar una representacion de la base de datos 
-sobre la cual aplicar dichos algoritmos
+Para que los algoritmos funcionen se debe de generar ciertas sobre la cual aplicar dichos algoritmos.
+
+Estructuras que se generan a partir de los esquemas de la base de datos. EL cual puede especicarse de distintas formas.
 
 Lamentablemente algunos SGBD, dan soporte a los estadares de sql de forma diferente por lo que no existe una algoritmo universal que funcione perfectamente para todos los SGBD.
 
@@ -557,85 +654,6 @@ Para el algoritmo se utilizar el conjunto de dependencias funcionales no trivial
 
 La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
 
-### Uso
-
-#### Requisitos 
-
-##### Instalacion 
-
-###### Como usuario
-
-composer install israeldavidvm/database-auditor
-
-composer global require israeldavidvm/database-auditor
-
-composer require israeldavidvm/database-auditor
-
-
-###### Como biblioteca (Solo si quieres crear un programa que use la libreria)
-composer require israeldavidvm/database-auditor
-
-##### Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de ña base de datos el comportamiento por defecto)
-
-Establece una configuracion en el archivo .env. como la siguiente
-
-```
-
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=<DatabaseName>
-DB_USERNAME=<UserName>
-DB_PASSWORD=<password>
-
-```
-
-#### Uso desde la interfaz de linea de comandos 
-
-Para poder usar el programa solo necesitaras un archivo .env con la configuracion de tu base de datos como se especifico anteriormente y ejecutar el comando
-
-**Si es incluido en un proyecto por medio de require con el global (composer global require israeldavidvm/database-auditor)**
-
-```~/.config/composer/vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
-
-**Si es incluido en un proyecto por medio de require sin el global (composer require israeldavidvm/database-auditor)**
-
-```./vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
-
-**Si es instalado por medio de install o se parte de la raiz del proyecto (composer install israeldavidvm/database-auditor)**
-
-```composer audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
-
-Description:
-  Este comando te permite realizar una serie de validacionesen tu base de datos redirige la salida para pasar la informacion a un archivo 
-
-Arguments:
-  validationAlgorithms           Valor de los tipos de algoritmo de validacion a aplicar separados por coma (,) Ejemplo VerificationBCNF,VerificationNonAdditiveConcatenation [default: "VerificationBCNF,VerificationNonAdditiveConcatenation"]
-  databaseSchemaGeneratorConfig  Cadena que especifica el databaseSchemaGenerator y su configuracionDonde la cadena tiene un formato como el siguiente<databaseSchemaGenerator>|<config>Donde <databaseSchemaGenerator> es el Valor del tipo de generador de esquema de base de datoscomo por ejemplo SchemaFromDatabaseUsingNamey <config> es la configuracion del generador de esquema de base de datos que depemndera del tipo para el caso de SchemaFromDatabaseUsingName tiene el formato <mode>|<tables>|<path> [default: "SchemaFromDatabaseUsingName|exclude|users,migrations,password_resets,failed_jobs,personal_access_tokens,taxonomy_taxonomy|./.env"]
-
-Options:
-  -h, --help                     Display help for the given command. When no command is given display help for the list command
-      --silent                   Do not output any message
-  -q, --quiet                    Only errors are displayed. All other output is suppressed
-  -V, --version                  Display this application version
-      --ansi|--no-ansi           Force (or disable --no-ansi) ANSI output
-  -n, --no-interaction           Do not ask any interactive question
-  -v|vv|vvv, --verbose           Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
-
-
-### Make a donation. Your contribution will make a difference.
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/israeldavidvm)
-[![Paypal](https://img.shields.io/badge/Paypal-@israeldavidvm-0077B5?style=for-the-badge&logo=paypal&logoColor=white&labelColor=101010)](https://paypal.me/israeldavidvm)
-[![Binance](https://img.shields.io/badge/Binance_ID-809179020-101010?style=for-the-badge&logo=binancel&logoColor=white&labelColor=101010)](https://www.binance.com/activity/referral-entry/CPA?ref=CPA_004ZGH9EIS)
-
-### Find me on:
-[![GITHUB](https://img.shields.io/badge/Github-israeldavidvm-gray?style=for-the-badge&logo=github&logoColor=white&labelColor=101010)](https://github.com/israeldavidvm)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-israeldavidvm-0077B5?style=for-the-badge&logo=linkedin&logoColor=white&labelColor=101010)](https://www.linkedin.com/in/israeldavidvm/)
-[![Twitter](https://img.shields.io/badge/Twitter-@israeldavidvm-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white&labelColor=101010)](https://twitter.com/israeldavidvm)
-[![Facebook](https://img.shields.io/badge/Facebook-israeldavidvm-1877F2?style=for-the-badge&logo=facebook&logoColor=white&labelColor=101010)](https://www.facebook.com/israeldavidvm)
-[![Instagram](https://img.shields.io/badge/Instagram-@israeldavidvmv-gray?style=for-the-badge&logo=instagram&logoColor=white&labelColor=101010)](https://www.instagram.com/israeldavidvm/)
-[![TikTok](https://img.shields.io/badge/TikTok-@israeldavidvm-E4405F?style=for-the-badge&logo=tiktok&logoColor=white&labelColor=101010)](https://www.tiktok.com/@israeldavidvm)
-[![YouTube](https://img.shields.io/badge/YouTube-@israeldavidvm-FF0000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=101010)](https://www.youtube.com/channel/UCmZLFpEPNdwpJOhal0wry7A)
 
 ## Technologies used / Tecnologias usadas
 

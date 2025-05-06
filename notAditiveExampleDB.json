@@ -7,22 +7,19 @@
         "ubicacionProyecto",
         "horas"
     ],
-    "decompositions": [
-        [
+    "decompositionsByTable":{
+        "empleados" : [
+            "nombreE",
+            "ubicacionProyecto"
+         ],
+         "asignaciones" : [
             "dni",
-            "nombreE"
-        ],
-        [
             "numProyecto",
+            "horas",
             "nombreProyecto",
             "ubicacionProyecto"
-        ],
-        [
-            "dni",
-            "numProyecto",
-            "horas"
         ]
-    ],
+     },
     "functionalDependencies": [
         {
             "x": [

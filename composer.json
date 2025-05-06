@@ -20,9 +20,16 @@
             "Israeldavidvm\\DatabaseAuditor\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Israeldavidvm\\DatabaseAuditor\\Tests\\": "tests/"
+        }
+    },
     "scripts": {
         "audit-database": "./bin/database-auditor  app:audit-database"
     },
-    "bin": ["/bin/database-auditor"]
-
+    "bin": ["/bin/database-auditor"],
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    }
 }

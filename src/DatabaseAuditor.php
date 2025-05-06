@@ -2,14 +2,9 @@
 
 namespace Israeldavidvm\DatabaseAuditor;
 use Exception;
-use Dotenv\Dotenv;
-
 
 class DatabaseAuditor {
 
-    public $dataBaseConfig;
-    public $pdo;
-    public $metaInfoEnvFile;
 
     public $universalRelationship;
 
@@ -24,16 +19,11 @@ class DatabaseAuditor {
     public $databaseSchemaGenerators;
     public $validationAlgorithms;
 
-    public function __construct($metaInfoEnvFile=null) {
+    public function __construct() {
 
         $this->reset();
 
         $this->databaseSchemaGenerators=[];
-
-        if($metaInfoEnvFile){
-            $this->metaInfoEnvFile=$metaInfoEnvFile;
-            $this->initDatabaseConnection($metaInfoEnvFile);
-        }
 
     }
 
@@ -46,36 +36,6 @@ class DatabaseAuditor {
         $this->decompositionsByTable=[];
         $this->primaryKeysByTable=[];
         $this->foreignKeysByTable=[];
-
-    }
-
-    public function initDatabaseConnection($metaInfoEnvFile){
-
-        $this->metaInfoEnvFile=$metaInfoEnvFile;
-
-        $dotenv = Dotenv::createImmutable(
-            $this->metaInfoEnvFile['pathEnvFolder'],
-            $this->metaInfoEnvFile['name'],
-        );
-        $dotenv->load();
-        $dotenv->required(['DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD']);
-        
-        // Configuración de la conexión a la base de datos
-        $this->dataBaseConfig=[
-            'host' => $_ENV['DB_HOST'], // Cambia esto si tu servidor es diferente
-            'dbname' => $_ENV['DB_DATABASE'], // Nombre de tu base de datos
-            'user' => $_ENV['DB_USERNAME'], // Tu usuario de la base de datos
-            'password' => $_ENV['DB_PASSWORD'], // Tu contraseña de la base de datos
-        ];
-
-        try {
-            // Crear una conexión PDO
-            $this->pdo = new \PDO("pgsql:host={$this->dataBaseConfig['host']};dbname={$this->dataBaseConfig['dbname']}", $this->dataBaseConfig['user'], $this->dataBaseConfig['password']);
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $e) {
-            echo "Error de conexión: " . $e->getMessage();
-        }
-
 
     }
 
@@ -381,11 +341,46 @@ class DatabaseAuditor {
 
     }
 
-    public function areEqual($set1,$set2){
-        return $this->isASubset($set1,$set2)&&$this->isASubset($set2,$set1);
+    public static function areEqualFunctionalDependenciesSet($set1,$set2){
+
+        return self::isAFunctionalDependeciesSubset($set1,$set2) && self::isAFunctionalDependeciesSubset($set2,$set1);
+ 
     }
 
-    public function isASubset($subSet,$set){
+    public static function isAFunctionalDependeciesSubset($subSet,$set){
+        foreach($subSet as $fd){
+            if(self::functionalDependencyInSet($fd,$set)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function functionalDependencyInSet($fd,$set){
+
+        foreach($set as $x){
+            if(self::areEqualFunctionalDependencies($fd,$x)){
+                return true;
+            }
+        }
+        return false;
+ 
+    }
+
+    public static function areEqualFunctionalDependencies($fd1,$fd2){
+
+        if($fd1['x']==$fd2['x']&& self::areEqual($fd1['y'],$fd2['y'])){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public static function areEqual($set1,$set2){
+        return self::isASubset($set1,$set2) && self::isASubset($set2,$set1);
+    }
+
+    public static function isASubset($subSet,$set){
         foreach($subSet as $x){
             if(!in_array($x,$set)){
                 return false;
@@ -394,7 +389,7 @@ class DatabaseAuditor {
         return true;
     }
 
-    public function union($set,$addSet): Array{
+    public static function union($set,$addSet): Array{
         foreach($addSet as $x){
             if(!in_array($x,$set)){
                 $set[]=$x;
@@ -403,7 +398,7 @@ class DatabaseAuditor {
         return $set;
     }
 
-    public function difference($set,$subtractSet){
+    public static function difference($set,$subtractSet){
         $result=[];
         foreach($set as $x){
             if(!in_array($x, $subtractSet)){

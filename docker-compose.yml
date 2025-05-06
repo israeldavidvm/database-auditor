@@ -1,0 +1,82 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: "test"
+      PGPASSWORD: 'test'
+      POSTGRES_USER: 'test'
+      POSTGRES_PASSWORD: "test"
+    ports:
+      - "7777:5432"
+    restart: always
+
+  # mysql:
+  #   image: mysql/mysql-server:5.7
+  #   environment:
+  #     MYSQL_ALLOW_EMPTY_PASSWORD: 1
+  #     MYSQL_ROOT_PASSWORD: ""
+  #     MYSQL_DATABASE: "forge"
+  #     MYSQL_ROOT_HOST: "%"
+  #   ports:
+  #     - "3306:3306"
+  #   restart: always
+  # mariadb:
+  #   image: mariadb:11
+  #   environment:
+  #     MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+  #     MARIADB_ROOT_PASSWORD: ""
+  #     MARIADB_DATABASE: "forge"
+  #     MARIADB_ROOT_HOST: "%"
+  #   ports:
+  #     - "3306:3306"
+  #   restart: always
+  # dynamodb:
+  #   image: amazon/dynamodb-local:2.0.0
+  #   ports:
+  #     - "8000:8000"
+  #   command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+  # memcached:
+  #   image: memcached:1.6-alpine
+  #   ports:
+  #     - "11211:11211"
+  #   restart: always
+  # mssql:
+  #   image: mcr.microsoft.com/mssql/server:2019-latest
+  #   environment:
+  #     ACCEPT_EULA: "Y"
+  #     SA_PASSWORD: "Forge123"
+  #   ports:
+  #     - "1433:1433"
+  #   restart: always
+  # redis:
+  #   image: redis:7.0-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   restart: always
+  # redis-cluster-0:
+  #   image: redis:7.0-alpine
+  #   ports:
+  #     - "7000:7000"
+  #   restart: always
+  #   command: redis-server --port 7000 --appendonly yes --cluster-enabled yes
+  # redis-cluster-1:
+  #   image: redis:7.0-alpine
+  #   ports:
+  #     - "7001:7001"
+  #   restart: always
+  #   command: redis-server --port 7001 --appendonly yes --cluster-enabled yes
+  # redis-cluster-2:
+  #   image: redis:7.0-alpine
+  #   ports:
+  #     - "7002:7002"
+  #   restart: always
+  #   command: redis-server --port 7002 --appendonly yes --cluster-enabled yes
+  # redis-cluster-creator:
+  #   image: redis:7.0-alpine
+  #   depends_on:
+  #     - redis-cluster-0
+  #     - redis-cluster-1
+  #     - redis-cluster-2
+  #   command: sh -c 'redis-cli --cluster create redis-cluster-0:7000 redis-cluster-1:7001 redis-cluster-2:7002 --cluster-replicas 0 --cluster-yes || true'
+  #   restart: no
