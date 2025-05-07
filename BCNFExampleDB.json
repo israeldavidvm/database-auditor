@@ -50,5 +50,14 @@
                 "horas"
             ]
         }
+    ],
+    "joinsClusters": [
+        
+        [
+            "empleados",
+            "proyectos",
+            "asignaciones"
+        ]           
+
     ]
 }

@@ -21,7 +21,7 @@ class AppCommand extends Command
     protected function configure()
     {
         // Define el nombre del comando
-        $this->setName('app:audit-database')
+        $this->setName('audit-database')
             ->setDescription(
                 'Este comando te permite realizar una serie de validaciones' .
                 'en tu base de datos redirige la salida para pasar la informacion a un archivo ' 
@@ -41,18 +41,15 @@ class AppCommand extends Command
                 InputArgument::OPTIONAL, 
                 'Cadena que especifica el databaseSchemaGenerator y su configuracion'.
                 'Donde la cadena tiene un formato como el siguiente'.
-                '<databaseSchemaGenerator>|<config>'.
-                'Donde <databaseSchemaGenerator> '.
-                'es el Valor del tipo de generador de esquema de base de datos'.
-                'como por ejemplo SchemaFromDatabaseUsingName'. 
-                'y <config> es la configuracion del generador'.
-                ' de esquema de base de datos que depemndera'.
-                ' del tipo para el caso de SchemaFromDatabaseUsingName'.
-                ' tiene el formato <mode>|<tables>|<path>',
+                '<databaseSchemaGenerator>|<path>'.
+                'Donde'.
+                '<databaseSchemaGenerator>::=SchemaFromDatabaseUsingName|SchemaFromJSON '.
+                'Es decir el Valor del tipo de generador de esquema de base de datos'.
+                '<path>'.
+                'Es la ruta al archivo .json en caso de SchemeFromJson'.
+                ' o la ruta al archivo .env en el caso de SchemaFromDatabaseUsingName'
+                ,
                 'SchemaFromDatabaseUsingName'.
-                '|exclude'.
-                '|users,migrations,password_resets,failed_jobs,personal_access_tokens,'
-                .'taxonomy_taxonomy'.
                 '|./.env'
             );
     }
@@ -67,15 +64,12 @@ class AppCommand extends Command
 
         $this->selectValidationAlgorithms($input);
 
-        // var_dump($metaInfoClustersTables);
         $this->databaseAuditor->generateDatabaseSchema();
 
         $this->databaseAuditor->executeValidationAlgorithm();
 
-        //Mostrar mensaje de éxito
-        $output->writeln('Se ha ejecutado los algoritmos de validacion');
+        $this->databaseAuditor->printReport();
 
-        // Devolver un código de estado (éxito)
         return Command::SUCCESS;
     }
 
@@ -88,80 +82,27 @@ class AppCommand extends Command
         );
         
         $databaseSchemaGenerator = $databaseSchemaGeneratorConfig[0];
-        $config = $databaseSchemaGeneratorConfig[1];
+        $path = $databaseSchemaGeneratorConfig[1];
 
-        if($databaseSchemaGenerator=='SchemaFromDatabaseUsingName'){
-            $config = explode('|', $config);
-
-            // Obtener la ruta proporcionada por el usuario
-            $path = $config[2];
-            
-            if (!file_exists($path)) {
-                $output->writeln("<error>El archivo .env en la ruta proporcionada no existe.</error>\n");
-                return Command::FAILURE;
-            }
-
-            // Obtener la ruta del directorio que contiene el archivo
-            $directoryPath = dirname($path);
-
-            // Obtener el nombre del archivo
-            $fileName = basename($path);
-
-            // Crear la configuración para DatabaseKnowledgeable
-            $metaInfoEnvFile = [
-                'pathEnvFolder' => $directoryPath,
-                'name' => $fileName,
-            ];
-
-            $tables= explode(',', $config[1]);
-
-            $this->databaseAuditor->databaseSchemaGenerators['SchemaFromDatabaseUsingName']= new SchemaFromDatabaseUsingName(
-                $this->databaseAuditor,
-                $metaInfoEnvFile,
-                [
-                    'mode'=>$config[0],
-                    'tables'=> $tables
-                ]
-            );
-
-            //tables => 'migrations,password_resets,failed_jobs,personal_access_tokens,taxonomy_taxonomy',
-
-       
+        try {
+            if($databaseSchemaGenerator=='SchemaFromDatabaseUsingName'){
+               
+                $this->databaseAuditor->databaseSchemaGenerators['SchemaFromDatabaseUsingName']= new SchemaFromDatabaseUsingName(
+                    $this->databaseAuditor,
+                    $path
+                );    
+           
+            }else {
+    
+                $this->databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= new SchemaFromJSON(
+                    $this->databaseAuditor,
+                    $path
+                );
+            }        
+        } catch (\Exception $e) {
+            $output->writeln("<error>Error: {$e->getMessage()}</error>\n");
+            return Command::FAILURE;
         }
-
-
-// $metaInfoClustersTables=[
-//     [
-//         'mode'=>'include',
-//         'tables'=> [
-//             'taxonomies',
-//             'source_taxonomy',
-//             'sources',
-//         ]
-//     ],
-//     [
-//         'mode'=>'include',
-//         'tables'=> [
-//             'sources',
-//             'source_user',
-//             'users'
-//         ]
-//     ]
-//     // [
-//     //     'mode'=>'exclude',
-//     //     'tables'=> [
-//     //         'migrations',
-//     //         'taxonomy_taxonomy',
-//     //         'experiences',
-//     //         'password_resets',
-//     //         'failed_jobs',
-//     //         'personal_access_tokens'
-//     //     ]
-//     // ]
-// ];
-
-
-    //$databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= new SchemaFromJSON($databaseAuditor,'./databaseInfo.json');
 
     
     }

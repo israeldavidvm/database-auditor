@@ -1,0 +1,11 @@
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+
+DB_PORT=7777
+DB_DATABASE=test
+DB_USERNAME=test
+DB_PASSWORD=test
+
+DATA_AUDITOR_FITLER=helado
+DATA_AUDITOR_ELEMENTS=users,migrations,password_resets,failed_jobs,personal_access_tokens
+DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE=./functionDepedenciesTest.json

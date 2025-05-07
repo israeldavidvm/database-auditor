@@ -7,54 +7,47 @@ use  Israeldavidvm\DatabaseAuditor\ValidationAlgorithm;
 class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
     public function execute(){
-
-        $originalJoinsClusters=$this->databaseAuditor->joinsClusters;
-        $originalTables=$this->databaseAuditor->getTableNames();
         
-        print("Creando agrupaciones de tablas para aplicarles a cada una el Algoritmo 11.1 de Verificación  de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE\n\n");
+        // print("Creando agrupaciones de tablas para aplicarles a cada una el Algoritmo 11.1 de Verificación  de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE\n\n");
 
-        foreach($originalJoinsClusters as $cluster){
+        foreach($this->databaseAuditor->joinsClusters as $cluster){
 
-            $this->databaseAuditor->regenerateDatabaseSchemaFromListTableNames($cluster);
-
-            $this->verificationNonAdditiveConcatenation();
+            $this->verificationNonAdditiveConcatenation($cluster);
 
         }
-
-        $this->databaseAuditor->regenerateDatabaseSchemaFromListTableNames($originalTables);
-
     }
 
 
-    public function verificationNonAdditiveConcatenation(){
+    public function verificationNonAdditiveConcatenation($schema){
 
         // loadInputFromDatabase($dataBaseconfig, $universalRelationship,$decompositionsByTableByTable);
 
-        print("Para el siguiente programa se utilizara el Algoritmo 11.1 de Verificación  de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE\n\n");
+        $explain='';
 
-        $this->databaseAuditor->printUniversalRelationship();
-        $this->databaseAuditor->printDecompositions();
-        $this->databaseAuditor->printFunctionalDependencies();
+        $explain.=Schema::universalRelationshipToString($schema->universalRelationship);
+        $explain.=Schema::decompositionsToString($schema->decompositionsByTable);
+        $explain.=Schema::functionalDependenciesToString($schema->functionalDependencies);
 
         // Inicializar la matriz S
         $matrix = [];
 
-        print("\nCree una matriz inicial S con una fila i por cada relación Ri en D, y una columna j por cada atributo Aj en R.\n");
+        $explain.="\nCree una matriz inicial S con una fila i por cada relación Ri en D, y una columna j por cada atributo Aj en R.\n";
 
         // Asignar b_ij a la matriz S
 
-        for ($i=0,$maxRows=count($this->databaseAuditor->decompositionsByTable); $i < $maxRows; $i++) { 
+        for ($i=0,$maxRows=count($schema->decompositionsByTable); $i < $maxRows; $i++) { 
 
             $row = [];
-            foreach ($this->databaseAuditor->universalRelationship as $j => $attribute) {
+            foreach ($schema->universalRelationship as $j => $attribute) {
                 // Asignar b_ij como un símbolo distinto
                 $row[] = "b_{$i}_{$j}";
             }
             $matrix[$i] = $row;
         }
 
-        print("\nAsigne S(i, j):= bij en todas las entradas de la matriz. (∗ cada bij es un símbolo distinto asociado a índices (i, j) ∗)\n");
-        $this->printTable($matrix);
+        $explain.="\nAsigne S(i, j):= bij en todas las entradas de la matriz. (∗ cada bij es un símbolo distinto asociado a índices (i, j) ∗)\n";
+        
+        $explain.=Self::tableToSTring($matrix);
 
         // print_r($matrix);
         // print_r($universalRelationship);
@@ -62,9 +55,9 @@ class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
         //Asignar a_j si la relación incluye el atributo
         $i=0;
-        foreach ($this->databaseAuditor->decompositionsByTable as $key => $decomposition) {
+        foreach ($schema->decompositionsByTable as $key => $decomposition) {
             foreach ($decomposition as $atribute) {
-                    $j=array_search($atribute,$this->databaseAuditor->universalRelationship);
+                    $j=array_search($atribute,$schema->universalRelationship);
                     if ($j!==false) {
                         $matrix[$i][$j] = "a_{$j}"; // Asignar a_j
                     }
@@ -72,23 +65,23 @@ class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
             $i++;
         }
 
-        print("Por cada fila i que representa un esquema de relación Ri 
+        $explain.="Por cada fila i que representa un esquema de relación Ri 
     {por cada columna j que representa un atributo Aj
         {si la (relación Ri incluye un atributo Aj) entonces asignar S(i, j):⫽ aj;};};
-            (∗ cada aj es un símbolo distinto asociado a un índice (j) ∗)\n");
+            (∗ cada aj es un símbolo distinto asociado a un índice (j) ∗)\n";
 
-        $this->printTable($matrix);
+        $explain.=Self::tableToSTring($matrix);
         // print_r($matrix);
 
-        print("Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere cambios en S{por cada dependencia funcional X → Y en F{ para todas las filas de S que tengan los mismos símbolos en las columnas correspondientes a  los atributos de X{ hacer que los símbolos de cada columna que se corresponden con un atributo de  Y sean los mismos en todas esas filas siguiendo este patrón: si cualquiera  de las filas tiene un símbolo a para la columna, hacer que el resto de filas  tengan el mismo símbolo a en la columna. Si no existe un símbolo a para el  atributo en ninguna de las filas, elegir uno de los símbolos b para el atributo  que aparezcan en una de las filas y ajustar el resto de filas a ese valor } } }\n");
+        $explain.="Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere cambios en S{por cada dependencia funcional X → Y en F{ para todas las filas de S que tengan los mismos símbolos en las columnas correspondientes a  los atributos de X{ hacer que los símbolos de cada columna que se corresponden con un atributo de  Y sean los mismos en todas esas filas siguiendo este patrón: si cualquiera  de las filas tiene un símbolo a para la columna, hacer que el resto de filas  tengan el mismo símbolo a en la columna. Si no existe un símbolo a para el  atributo en ninguna de las filas, elegir uno de los símbolos b para el atributo  que aparezcan en una de las filas y ajustar el resto de filas a ese valor } } }\n";
 
         // Bucle hasta que no haya cambios
         do {
             $oldMatrix = $matrix;
 
-            $this->printTable($matrix);
+            $explain.=Self::tableToSTring($matrix);
 
-            foreach ($this->databaseAuditor->functionalDependencies as $i => $dependency) {
+            foreach ($schema->functionalDependencies as $i => $dependency) {
 
                 //echo "Dependencia $i \n";
 
@@ -97,10 +90,10 @@ class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
                 $rowsWithAntecedentIndexes=$this->searchRowsWithAntecedentIndexes(
                     $X, 
-                    $this->databaseAuditor->decompositionsByTable
+                    $schema->decompositionsByTable
                 );
                 $columnsIndexes = array_keys(array_intersect(
-                    $this->databaseAuditor->universalRelationship, 
+                    $schema->universalRelationship, 
                     $Y)
                 );
 
@@ -127,22 +120,67 @@ class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
             }
 
-            $this->printTable($matrix);
+            $explain.=Self::tableToSTring($matrix);
 
 
         } while ($this->hasChanges($oldMatrix, $matrix));
 
 
         if($this->hasThePropertyOfNonAdditiveConcatenation($matrix)){
-            print("La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a\n");
+
+            $this->databaseAuditor->report->addVerification(
+                $schema->getGroupName(),
+                'NAC',
+                $explain.self::explainResult('NAC')
+            );    
+
         }else {
-            print("La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que  no existe una fila que este compuesta enteramente por símbolos a\n");
+            
+            $this->databaseAuditor->report->addVerification(
+                $schema->getGroupName(),
+                'NotNAC',
+                $explain.self::explainResult('NotNAC')
+            );  
+        
         }
 
-        // Mostrar la matriz final
+        // Mostrar la matriz final"La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que  no existe una fila que este compuesta enteramente por símbolos a\n");
+        
         // print_r($matrix);
 
         //print_r(searchRowsWithAntecedentIndexes(['x'], [['x'],['y'],['x']]));
+    }
+
+    public static $posibleResults=[
+        'NAC',
+        'NotNAC'
+    ];
+
+    public static function explainResult($result): string
+    {
+
+        switch ($result) {
+            case 'NAC':
+                return "La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad".
+                " de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F".
+                " en R dado que una fila  está compuesta enteramente por símbolos a".PHP_EOL.PHP_EOL
+                ;
+            case 'NotNAC':
+                return "La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad".
+                " de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F".
+                " en R dado que  no existe una fila que este compuesta enteramente por símbolos a".PHP_EOL.PHP_EOL;
+        }
+
+        return "No se ha podido determinar el resultado";
+       
+
+    }
+
+    public static function explainAlgorithm(): string
+    {
+        return "El Algoritmo utilizado para la".
+        " Verificación  de la propiedad de concatenación no aditiva sera el propuesto".
+        " por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE\n\n";
     }
 
     function searchRowsWithAntecedentIndexes($antecedent, $rows){
@@ -234,43 +272,33 @@ class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
     }
 
-    function  printTable($matrix){
-
-        $columnSize=0;
-
-        foreach ($matrix as $rKey => $row) {
-            foreach($row as $cKey => $column){
-                if(mb_strlen($column)>$columnSize){
-                    $columnSize=mb_strlen($column);
+    public static function tableToString($matrix): string {
+        $columnSize = 0;
+        $string = "\n";
+    
+        foreach ($matrix as $row) {
+            foreach ($row as $column) {
+                if (mb_strlen($column) > $columnSize) {
+                    $columnSize = mb_strlen($column);
                 }
             }
         }
-
-        print("\n");
-
-        foreach ($matrix as $key => $row) {
-            $this->printRow($row,$columnSize);
-            print("\n");
-
+    
+        foreach ($matrix as $row) {
+            $string .= self::rowToString($row, $columnSize) . "\n";
         }
-
-        print("\n");
-
+    
+        $string .= "\n";
+        return $string;
     }
 
-    function printRow($set,$columnSize){
-
-        print("|");
-
-        foreach ($set as $key => $value) {
-            $value=str_pad($value,$columnSize," ",STR_PAD_BOTH);
-            if($key!==array_key_last($set)){
-                print("$value|");
-            }else {
-                print("$value");
-            }
+    public static function rowToString($set, $columnSize): string {
+        $str = "|";
+        foreach ($set as $value) {
+            $value = str_pad($value, $columnSize, " ", STR_PAD_BOTH);
+            $str .= $value . "|";
         }
-        print("|");
+        return $str;
     }
 
 

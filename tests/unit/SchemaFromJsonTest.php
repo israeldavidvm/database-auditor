@@ -10,9 +10,14 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\CoversNothing;
+use Israeldavidvm\DatabaseAuditor\Schema;
+use Israeldavidvm\DatabaseAuditor\Report;
+
 
 #[CoversClass(SchemaFromJSON::class)]
 #[UsesClass(DatabaseAuditor::class)]
+#[UsesClass(Schema::class)]
+#[UsesClass(Report::class)]
 class SchemaFromJSONTest extends TestCase
 {
 
@@ -24,8 +29,10 @@ class SchemaFromJSONTest extends TestCase
         $schemaFromJson = new SchemaFromJSON($databaseAuditor, $pathJson);
         $schemaFromJson->generate();
 
-        $this->assertNotEmpty($databaseAuditor->universalRelationship);
-        $this->assertNotEmpty($databaseAuditor->decompositionsByTable);
-        $this->assertNotEmpty($databaseAuditor->functionalDependencies);
+        $baseSchema=$databaseAuditor->baseSchema;
+
+        $this->assertNotEmpty($baseSchema->universalRelationship);
+        $this->assertNotEmpty($baseSchema->decompositionsByTable);
+        $this->assertNotEmpty($baseSchema->functionalDependencies);
     }
 }

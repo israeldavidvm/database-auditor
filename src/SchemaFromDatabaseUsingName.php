@@ -1,8 +1,12 @@
 <?php
 
 namespace Israeldavidvm\DatabaseAuditor;
-use Dotenv\Dotenv;
 use Exception;
+use Dotenv\Dotenv;
+
+use Israeldavidvm\DatabaseAuditor\Schema;
+use Israeldavidvm\DatabaseAuditor\DatabaseSchemaGenerator;
+use PDO;
 
 class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 {
@@ -31,7 +35,8 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
     
     public $dataBaseConfig;
     public $pdo;
-    public $metaInfoEnvFile;
+    public $pathEnvFile;
+    public $pathJson;
 
     /**
      * Constructor de la clase
@@ -40,59 +45,152 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
      *
      * @param object $databaseAuditor que apunta a una referencia de 
      * una instancia de clase DatabaseAuditor
-     * @param array $metaInfoEnvFile Arreglo asociativo que 
-     * contiene la ruta (en la clave pathEnvFolder) y 
-     * el nombre del archivo de configuración del entorno(en la clave name).
-     * @param array $metaInfoClustersTables arreglo asociativo que 
-     * contiene el modo de cluster(mode) y tablas de clústeres (tipo desconocido).
+     * @param array $pathEnvFile ruta al archivo .env
      */
-    public function __construct($databaseAuditor,$metaInfoEnvFile,$metaInfoClusterTables) {
+    public function __construct($databaseAuditor,$pathEnvFile) {
+
+        // echo "Se ha creado una instancia de ".get_called_class()."\n";
+        // echo "Configuracion de la base de datos:\n";
+        // echo json_encode($metaInfoEnvFile)."\n";
+        // echo json_encode($metaInfoClusterTables)."\n";
+
         $this->databaseAuditor = $databaseAuditor;
 
-        if($metaInfoEnvFile){
-            $this->metaInfoEnvFile=$metaInfoEnvFile;
-            $this->initDatabaseConnection($metaInfoEnvFile);
+        if($pathEnvFile){
+            $this->pathEnvFile=$pathEnvFile;
+            $this->initDatabaseConfig($pathEnvFile);
+            $this->initDatabaseConnection();
         }
     
-        $this->metaInfoClusterTables=$metaInfoClusterTables;
+    }
+
+    public function initDatabaseConfig($pathEnvFile){
+
+
+        // echo "Israel   Genesissssss".$pathEnvFile;
+
+        if(!file_exists($pathEnvFile)){
+            throw new Exception("El archivo .env no existe en la ruta especificada: $pathEnvFile");
+        }
+
+/*         echo $pathEnvFile;
+ */
+        $dotenv = Dotenv::createMutable(
+            dirname($pathEnvFile),
+            basename($pathEnvFile),
+        );
+
+        $dotenv->load();
+        
+        $dotenv->required([
+            'DB_HOST',
+            'DB_DATABASE',
+            'DB_USERNAME',
+            'DB_PASSWORD',
+            'DB_PORT',
+            'DATA_AUDITOR_FILTER',
+            'DATA_AUDITOR_ELEMENTS',
+            'DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE'
+
+        ]);
+
+        // echo  json_encode($_ENV);
+
+        // echo $_ENV['DATA_AUDITOR_FILTER'];
+        // echo $_ENV['DATA_AUDITOR_ELEMENTS']; 
+
+        // Configuración de la conexión a la base de datos
+        $this->dataBaseConfig=[
+            'host' => $_ENV['DB_HOST'], // Cambia esto si tu servidor es diferente
+            'dbname' => $_ENV['DB_DATABASE'], // Nombre de tu base de datos
+            'user' => $_ENV['DB_USERNAME'], // Tu usuario de la base de datos
+            'password' => $_ENV['DB_PASSWORD'], // Tu contraseña de la base de datos
+            'port' => $_ENV['DB_PORT'] // Puerto de la base de datos
+        ];
+
+        if(
+            !isset($_ENV['DATA_AUDITOR_FILTER']) 
+            || 
+            !isset($_ENV['DATA_AUDITOR_ELEMENTS'])
+        ){
+            throw new Exception("Es necesario que establezcas las variables".
+            "DATA_AUDITOR_ELEMENTS DATA_AUDITOR_FILTER");
+        }
+
+        if(
+            $_ENV['DATA_AUDITOR_FILTER']!="include" 
+            && 
+            $_ENV['DATA_AUDITOR_FILTER']!="exclude"
+        ){
+            throw new Exception("Los valores posibles para 'DATA_AUDITOR_FILTER' son include o exclude");
+        }
+
+        $this->pathJson=$_ENV['DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE'];
+
+        $this->metaInfoClusterTables=[
+            'mode'=>$_ENV['DATA_AUDITOR_FILTER'],
+            'tables'=>explode(',',$_ENV['DATA_AUDITOR_ELEMENTS'])
+        ];
+
+
+    }
+
+    public function initDatabaseConnection(){
+
+        try {
+            // Crear una conexión PDO
+            $this->pdo = new \PDO(
+                "pgsql:host={$this->dataBaseConfig['host']};port={$this->dataBaseConfig['port']};dbname={$this->dataBaseConfig['dbname']}", // Se añadió ;port=...
+                $this->dataBaseConfig['user'],
+                $this->dataBaseConfig['password']
+            );
+
+            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        } catch (\PDOException $e) {
+            echo "Error de conexión: para la configuracion ".json_encode($this->dataBaseConfig)." ". $e->getMessage();
+        }
+
+
     }
     
 
     public function generate(){
 
         try {
+
+            $schema=$this->databaseAuditor->baseSchema;
         
             $tables=$this->getTables();
         
-            echo "Tablas en la base de datos:\n";
+            // echo "Tablas en la base de datos:\n";
             foreach ($tables as $tableKey => $table) {
-                echo "- $table\n";
+                // echo "- $table\n";
 
-                $this->databaseAuditor->decompositionsByTable[$table]=$this->getColumnsByTable($table,true);
+                $schema->decompositionsByTable[$table]=$this->getColumnsByTable($table,true);
      
-                echo "  Columnas:\n";
-                foreach ($this->databaseAuditor->decompositionsByTable[$table] as $column) {
+                // echo "  Columnas:\n";
+                foreach ($schema->decompositionsByTable[$table] as $column) {
 
-                    if(!in_array($column, $this->databaseAuditor->universalRelationship)){
-                        $this->databaseAuditor->universalRelationship[]=$column;
+                    if(!in_array($column, $schema->universalRelationship)){
+                        $schema->universalRelationship[]=$column;
                     }
 
-                    echo "  - $column\n";
+                    // echo "  - $column\n";
                 }
         
-                $this->databaseAuditor->primaryKeysByTable[$table]=$this->getPKByTable($table,true);
+                $schema->primaryKeysByTable[$table]=$this->getPKByTable($table,true);
                 
-                echo "  Claves primarias:\n";
-                foreach ($this->databaseAuditor->primaryKeysByTable[$table] as $primaryKey) {
-                    echo "  - $primaryKey\n";
+                // echo "  Claves primarias:\n";
+                foreach ($schema->primaryKeysByTable[$table] as $primaryKey) {
+                    // echo "  - $primaryKey\n";
                     // echo "  - {$primaryKey['column_name']}\n";
                     // $this->decompositionsByTable[count($this->decompositions)-1];
                 }
 
-                $this->databaseAuditor->foreignKeysByTable[$table]=$this->getFKsByTable($table);
-                echo "  Claves foráneas:\n";
-                foreach ($this->databaseAuditor->foreignKeysByTable[$table] as $foreignKey) {
-                    echo "  - $foreignKey\n";
+                $schema->foreignKeysByTable[$table]=$this->getFKsByTable($table);
+                // echo "  Claves foráneas:\n";
+                foreach ($schema->foreignKeysByTable[$table] as $foreignKey) {
+                    // echo "  - $foreignKey\n";
                     //var_dump($foreignKey);
                     //echo "  - {$foreignKey['column_name']} -> {$foreignKey['foreign_table_name']}.{$foreignKey['foreign_column_name']}\n";
                 }
@@ -100,14 +198,20 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
                 $usualFunctionalDependenciesByTable=$this->getUsualFunctionalDependenciesByTable($table);
 
                 foreach ($usualFunctionalDependenciesByTable as $functionalDependency) {
-                    $this->databaseAuditor->functionalDependencies[]=$functionalDependency;
+                    $schema->functionalDependencies[]=$functionalDependency;
                 }
-
-                $this->databaseAuditor->joinsClusters=$this->generateJoinsClusters();
-
                
-        
             }
+
+            $this->loadFunctionDepedenciesFromJsonFile();
+
+            // echo "Esquema de la base de datos:\n";
+                // echo json_encode($this->generateJoinsClusters())."\n";
+               
+                $this->databaseAuditor->joinsClusters = 
+                    $this->databaseAuditor->baseSchema
+                    ->generateJoinsSchemas($this->generateJoinsClusters());
+
         } catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
         }
@@ -115,39 +219,44 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         
     }
 
-    public function regenerateFromListTableNames($listTableNames){
-        $this->metaInfoClusterTables=self::listTableNamesToMetaInfoClusterTables($listTableNames);
+    public function loadFunctionDepedenciesFromJsonFile(){
 
-        $this->generate();
+        $data = file_get_contents($this->pathJson);
+        $data = json_decode($data, true);
+
+        if(isset($data['functionalDependencies'])){
+            // echo "functionalDependencies";
+            $this->databaseAuditor->baseSchema->functionalDependencies=array_merge(
+                $this->databaseAuditor->baseSchema->functionalDependencies,
+                $data['functionalDependencies']
+            );
+        }
+
     }
         
 
     public function getTables(){
 
-        if(
-            !isset($this->metaInfoClusterTables['mode']) 
-            || 
-            !isset($this->metaInfoClusterTables['tables'])
-        ){
+        // echo json_encode($this->metaInfoClusterTables);
 
-            throw new Exception("Para generar las tablas en ".get_called_class()." se requiere el modo y las tablas");
+        if($this->metaInfoClusterTables['mode']=="include"){
 
-        }else{
-            if($this->metaInfoClusterTables['mode']=="include"){
-
-                $tables=$this->metaInfoClusterTables['tables'];
-
-            }elseif($this->metaInfoClusterTables['mode']=="exclude"){
-                
-                $tablesQuery = $this->pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-                $tables = $tablesQuery->fetchAll(\PDO::FETCH_COLUMN);
+            $tablesQuery = $this->pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+            $tables = $tablesQuery->fetchAll(\PDO::FETCH_COLUMN);
+        
+            $tables = array_filter($tables, function($value) {
+                return in_array($value, $this->metaInfoClusterTables['tables']);
+            });        
             
-                $tables = array_filter($tables, function($value) {
-                    return !in_array($value, $this->metaInfoClusterTables['tables']);
-                });
+        }elseif($this->metaInfoClusterTables['mode']=="exclude"){
             
-            }
-
+            $tablesQuery = $this->pdo->query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+            $tables = $tablesQuery->fetchAll(\PDO::FETCH_COLUMN);
+        
+            $tables = array_filter($tables, function($value) {
+                return !in_array($value, $this->metaInfoClusterTables['tables']);
+            });
+        
         }
 
         return $tables;
@@ -235,7 +344,10 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         foreach ($primaryKeys as $primaryKey) {
             $usualFunctionalDependencies[]=[
                 'x'=>[$primaryKey],
-                'y'=>DatabaseAuditor::difference($this->databaseAuditor->decompositionsByTable[$tableName],[$primaryKey])
+                'y'=>Schema::difference(
+                    $this->databaseAuditor->baseSchema->decompositionsByTable[$tableName],
+                    [$primaryKey]
+                )
             ];
         }
 
@@ -270,6 +382,8 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
             }
 
             $fks=$this->getFKsByTable($table);
+
+            // echo "FKs de la tabla $table: ".json_encode($fks)."\n";
 
             //evita que se haga el analisis para las fk que ya se evaluaron en la relacion 
             //many to many
@@ -384,42 +498,6 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         }else {
             return $word . 's'; // Agregar 's' por defecto
         }
-    }
-
-    public function initDatabaseConnection($metaInfoEnvFile){
-
-        $this->metaInfoEnvFile=$metaInfoEnvFile;
-
-        $dotenv = Dotenv::createImmutable(
-            $this->metaInfoEnvFile['pathEnvFolder'],
-            $this->metaInfoEnvFile['name'],
-        );
-        $dotenv->load();
-        $dotenv->required(['DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD','DB_PORT']);
-        
-        // Configuración de la conexión a la base de datos
-        $this->dataBaseConfig=[
-            'host' => $_ENV['DB_HOST'], // Cambia esto si tu servidor es diferente
-            'dbname' => $_ENV['DB_DATABASE'], // Nombre de tu base de datos
-            'user' => $_ENV['DB_USERNAME'], // Tu usuario de la base de datos
-            'password' => $_ENV['DB_PASSWORD'], // Tu contraseña de la base de datos
-            'port' => $_ENV['DB_PORT'] // Puerto de la base de datos
-        ];
-
-        try {
-            // Crear una conexión PDO
-            $this->pdo = new \PDO(
-                "pgsql:host={$this->dataBaseConfig['host']};port={$this->dataBaseConfig['port']};dbname={$this->dataBaseConfig['dbname']}", // Se añadió ;port=...
-                $this->dataBaseConfig['user'],
-                $this->dataBaseConfig['password']
-            );
-
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $e) {
-            echo "Error de conexión: para la configuracion ".json_encode($this->dataBaseConfig)." ". $e->getMessage();
-        }
-
-
     }
 
     public static function hasRepeatedElements(array $array): bool

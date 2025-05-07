@@ -4,6 +4,8 @@ namespace Israeldavidvm\DatabaseAuditor\Tests;
 
 use PDOException;
 use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidPathException;
+use Dotenv\Exception\ValidationException;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\UsesClass;
@@ -13,32 +15,30 @@ use PHPUnit\Framework\Attributes\CoversNothing
 ;
 use Israeldavidvm\DatabaseAuditor\DatabaseAuditor;
 use Israeldavidvm\DatabaseAuditor\SchemaFromDatabaseUsingName;
+use Israeldavidvm\DatabaseAuditor\Schema;
+use Israeldavidvm\DatabaseAuditor\Report;
+use Exception;
 
 #[CoversClass(SchemaFromDatabaseUsingName::class)]
 #[UsesClass(DatabaseAuditor::class)]
+#[UsesClass(Schema::class)]
+#[UsesClass(Report::class)]
+
 class SchemaFromDatabaseUsingNameTest extends TestCase
 {
     protected $databaseAuditor;
     protected $schemaGenerator;
     protected $pdo;
 
-    // public function __construct() {
-        
-    //     $this->databaseAuditor = new DatabaseAuditor;
-
-    // }
-
-    protected function setUp() : void
+    protected function createFakeDB($pathEnvFile) : void
     {
 
-        $this->databaseAuditor = new DatabaseAuditor;
-
         $dotenv = Dotenv::createImmutable(
-            '.',
-            '.env',
+            dirname($pathEnvFile),
+            basename($pathEnvFile),
         );
+
         $dotenv->load();
-        $dotenv->required(['DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD','DB_PORT']);
         
         // Configuración de la conexión a la base de datos
         $dataBaseConfig=[
@@ -62,21 +62,15 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
             echo "Error de conexión: para la configuracion ".json_encode($dataBaseConfig)." ". $e->getMessage();
         }
     
-    }
-
-    protected function createFakeDB() : void
-    {
-
-
         try {
              // Definición de la estructura de la primera tabla: empleados
-             $tablaErrores = 'CREATE TABLE IF NOT EXISTS "errores" (
+             $tablaHelado = 'CREATE TABLE IF NOT EXISTS "helados" (
                 "nombre" VARCHAR(255) NOT NULL,
                 "descripcion" VARCHAR(255)
             )';
         
             // Ejecutar la consulta para crear la tabla empleados
-            $this->pdo->exec($tablaErrores);
+            $this->pdo->exec($tablaHelado);
 
            
             // Definición de la estructura de la primera tabla: empleados
@@ -107,6 +101,53 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
             echo "Error al crear las tablas: " . $e->getMessage() . "\n";
         }
     }
+
+    public static function initDatabaseConnectionProvider(): array
+    {
+        return [
+            'Invalid env file' => [
+                './queso',
+                [
+                    'result' => '',
+                    'throwException'=>Exception::class
+                ]
+
+            ],
+            'Invalid config' => [
+                './.envInvalidConfig',
+                [
+                    'result' => '',
+                    'throwException'=>Exception::class
+                ]
+
+            ],
+            'Incompleted config' => [
+                './.envIncompletedConfig',
+                [
+                    'result' => '',
+                    'throwException'=>Exception::class
+                ]
+
+            ],
+
+ 
+        ];
+    }
+
+    #[DataProvider('initDatabaseConnectionProvider')]
+    public function testInitDatabaseConnection($pathEnvFile,$resultExpected): void{
+        
+        $databaseAuditor = new DatabaseAuditor();
+
+        $this->expectException($resultExpected['throwException']);
+
+        new SchemaFromDatabaseUsingName(
+            $databaseAuditor,
+            $pathEnvFile,
+        );
+
+    }
+
 
     public static function getUsualFunctionalDependenciesByTableProvider(): array
     {
@@ -176,15 +217,9 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
         $databaseAuditor = new DatabaseAuditor();
         
         $mockSchemaGeneratorBuilder = $this->getMockBuilder(SchemaFromDatabaseUsingName::class)
-            ->setConstructorArgs([$databaseAuditor, 
-                [
-                    'pathEnvFolder' => '.',
-                    'name' => '.env',
-                ],
-                [
-                    'mode' => 'exclude',
-                    'tables' => [],
-                ] 
+            ->setConstructorArgs([
+                $databaseAuditor, 
+                './.envTest',
             ])
             ->onlyMethods(['getTables', 'getFKsByTable', 'getColumnsByTable']);
 
@@ -199,14 +234,14 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
         $mapFKsByTable = [];
         $mapPKsByTable=[];
 
-        $databaseAuditor->decompositionsByTable = [];
+        $databaseAuditor->baseSchema->decompositionsByTable = [];
 
         foreach ($columnsByTable as $tableName => $columns) {
             $mapFKsByTable[] = [$tableName, $fksByTable[$tableName]];
             $mapPKsByTable[] = [$tableName, true,$pksByTable[$tableName]];
             $mapColumnsByTable[] = [$tableName, true, $columns];
 
-            $databaseAuditor->decompositionsByTable[$tableName]=$columns;
+            $databaseAuditor->baseSchema->decompositionsByTable[$tableName]=$columns;
 
         }
 
@@ -223,7 +258,7 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
             $result=array_merge($result,$mockSchemaGenerator->getUsualFunctionalDependenciesByTable($tableName));
         }
       
-        $this->assertTrue(DatabaseAuditor::areEqualFunctionalDependenciesSet($result,$expectedResult));
+        $this->assertTrue(Schema::areEqualFunctionalDependenciesSet($result,$expectedResult));
     }
 
     public static function generateJoinsClustersDataProvider(): array
@@ -307,17 +342,13 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
         array $fksByTable,
         array $expectedResult
     ): void {
+
         $databaseAuditor = new DatabaseAuditor();
 
         $mockSchemaGeneratorBuilder = $this->getMockBuilder(SchemaFromDatabaseUsingName::class)
-            ->setConstructorArgs([$databaseAuditor, [
-                'pathEnvFolder' => '.',
-                'name' => '.env',
-            ],
-            [
-                'mode' => 'exclude',
-                'tables' => [],
-            ] ])
+            ->setConstructorArgs([$databaseAuditor, 
+            './.envTest',
+            ])
             ->onlyMethods(['getTables', 'getFKsByTable', 'getColumnsByTable']);
 
         $mockSchemaGenerator = $mockSchemaGeneratorBuilder->getMock();
@@ -369,17 +400,21 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
     #[DataProvider('getFKsByTableProvider')]
     public function testGetFKsByTable(string $tableName, array $expectedForeignKeys): void
     {
-        $this->createFakeDB();
+        $this->databaseAuditor=new DatabaseAuditor();
+
+        $fileName='envWithoutHelados';
+
+        $this->generateEnvFile(
+            $fileName, 
+            'exclude', 
+            ['helados']
+        );
+
+        $this->createFakeDB("./$fileName");
+
         $schemaFromDatabaseUsingName = new SchemaFromDatabaseUsingName(
             $this->databaseAuditor,
-            [
-                'pathEnvFolder' => '.',
-                'name' => '.env',
-            ],
-            [
-                'mode' => 'exclude',
-                'tables' => ['errores'],
-            ]
+            "./$fileName",
         );
 
         $foreignKeys = $schemaFromDatabaseUsingName->getFKsByTable($tableName);
@@ -405,17 +440,21 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
     #[DataProvider('getPKByTableProvider')]
     public function testGetPKByTable(string $tableName, bool $fullyQualifiedForm, array $expectedPrimaryKey): void
     {
-        $this->createFakeDB();
+        $this->databaseAuditor=new DatabaseAuditor();
+
+        $fileName='envWithoutHelados';
+
+        $this->generateEnvFile(
+            $fileName, 
+            'exclude', 
+            ['helados']
+        );
+
+        $this->createFakeDB("./$fileName");
+
         $schemaFromDatabaseUsingName = new SchemaFromDatabaseUsingName(
             $this->databaseAuditor,
-            [
-                'pathEnvFolder' => '.',
-                'name' => '.env',
-            ],
-            [
-                'mode' => 'exclude',
-                'tables' => ['errores'],
-            ]
+            "./$fileName",
         );
 
         $primaryKey = $schemaFromDatabaseUsingName->getPKByTable($tableName, $fullyQualifiedForm);
@@ -515,19 +554,21 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
     #[DataProvider('getColumnsByTableProvider')]
     public function testGetColumnsByTable($tableName,$fullyQualifiedForm=false,$resultExpected){
 
-        $this->createFakeDB();
-        $schemaFromDatabaseUsingName=new SchemaFromDatabaseUsingName(
+        $this->databaseAuditor=new DatabaseAuditor();
+
+        $fileName='envWithoutHelados';
+
+        $this->generateEnvFile(
+            $fileName, 
+            'exclude', 
+            ['helados']
+        );
+
+        $this->createFakeDB("./$fileName");
+
+        $schemaFromDatabaseUsingName = new SchemaFromDatabaseUsingName(
             $this->databaseAuditor,
-            [
-                'pathEnvFolder' => '.',
-                'name' => '.env',
-            ],
-            [
-                'mode' => 'exclude',
-                'tables' => [
-                    'errores',
-                ],
-            ]
+            "./$fileName",
         );
 
         $columns = $schemaFromDatabaseUsingName->getColumnsByTable($tableName,$fullyQualifiedForm);
@@ -539,26 +580,22 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
         return [
             'include config'=>
                 [
-                    [
-                        'pathEnvFolder' => '.',
-                        'name' => '.env',
-                    ],
+                    'envTestInclude',
                     [
                         'mode' => 'include',
-                        'tables' => ['table1', 'table2'],
+                        'tables' => [
+                            'empleados'
+                        ],
                     ],
-                    ['table1', 'table2']
+                    ['empleados']
                 ],
             'exclude config'=>
             [
-                [
-                    'pathEnvFolder' => '.',
-                    'name' => '.env',
-                ],
+                'envTestExclude',
                 [
                     'mode' => 'exclude',
                     'tables' => [
-                        'errores',
+                        'helados',
                     ],
                 ],
                 ['empleados', 'asignaciones']
@@ -569,62 +606,28 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
 
   
     #[DataProvider('getTablesProvider')]
-    public function testGetTablesWithoutException($metaInfoEnvFile,$metaInfoClusterTables,$resultExpected)
+    public function testGetTables($fileName,$metaInfoClusterTables,$resultExpected)
     {
 
-        $this->createFakeDB();
+        $this->databaseAuditor=new DatabaseAuditor();
+
+        $this->generateEnvFile(
+            $fileName, 
+            $metaInfoClusterTables['mode'], 
+            $metaInfoClusterTables['tables']
+        );
+
+        $this->createFakeDB("./$fileName");
+
+        $schemaFromDatabaseUsingName = new SchemaFromDatabaseUsingName(
+            $this->databaseAuditor,
+            "./$fileName",
+        );
+
+
+        $tables = $schemaFromDatabaseUsingName->getTables();
         
-        $schemaFromDatabaseUsingName=new SchemaFromDatabaseUsingName(
-            $this->databaseAuditor,
-            $metaInfoEnvFile,
-            $metaInfoClusterTables
-        );
-
-
-        $tables = $schemaFromDatabaseUsingName->getTables();
         $this->assertEqualsCanonicalizing($resultExpected, $tables);
-    }
-
-
-    public static function getTablesExceptionProvider():array{
-
-        return [
-            [
-                [
-                    'pathEnvFolder' => '.',
-                    'name' => '.env',
-                ],
-                [
-                    'tables' => ['table1', 'table2'],
-                ],
-                ['table1', 'table2']
-            ],
-            [
-                [
-                    'pathEnvFolder' => '.',
-                    'name' => '.env',
-                ],
-                [
-                    'mode' => 'helado',
-                ],
-                ['table1', 'table2']
-            ],
-        ];
-
-    }
-
-    #[DataProvider('getTablesExceptionProvider')]
-    public function testGetTablesWithException($metaInfoEnvFile,$metaInfoClusterTables,$resultExpected)
-    {
-
-        $schemaFromDatabaseUsingName=new SchemaFromDatabaseUsingName(
-            $this->databaseAuditor,
-            $metaInfoEnvFile,
-            $metaInfoClusterTables
-        );
-
-        $this->expectException(\Exception::class);
-        $tables = $schemaFromDatabaseUsingName->getTables();
     }
 
    
@@ -874,4 +877,38 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
     {
         $this->assertSame($expected, SchemaFromDatabaseUsingName::hasRepeatedElements($array));
     }
+
+
+    public function generateEnvFile(
+        string $filename, 
+        string $dataAuditorFiler, 
+        array $dataAuditorElements
+        ): bool
+    {
+        $elementsString = implode(',', $dataAuditorElements);
+    
+        $content = <<<EOT
+    DB_CONNECTION=pgsql
+    DB_HOST=127.0.0.1
+    
+    DB_PORT=7777
+    DB_DATABASE=test
+    DB_USERNAME=test
+    DB_PASSWORD=test
+    
+    DATA_AUDITOR_FILTER={$dataAuditorFiler}
+    DATA_AUDITOR_ELEMENTS={$elementsString}
+    DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE=./functionDepedenciesTest.json
+    EOT;
+    
+        try {
+            $result = file_put_contents($filename, $content);
+            return $result !== false;
+        } catch (\Exception $e) {
+            // Handle any file writing errors
+            echo("Error al crear el archivo {$filename}: " . $e->getMessage());
+            return false;
+        }
+    }
+    
 }

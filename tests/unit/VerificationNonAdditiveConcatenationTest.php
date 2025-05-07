@@ -16,10 +16,15 @@ use Israeldavidvm\DatabaseAuditor\SchemaFromJSON;
 use Israeldavidvm\DatabaseAuditor\DatabaseAuditor;
 use Israeldavidvm\DatabaseAuditor\VerificationNonAdditiveConcatenation;
 use Israeldavidvm\DatabaseAuditor\SchemaFromDatabaseUsingName;
+use Israeldavidvm\DatabaseAuditor\Schema;
+use Israeldavidvm\DatabaseAuditor\Report;
 
 #[CoversClass(VerificationNonAdditiveConcatenation::class)]
 #[UsesClass(DatabaseAuditor::class)]
 #[UsesClass(SchemaFromJSON::class)]
+#[UsesClass(Schema::class)]
+#[UsesClass(Report::class)]
+
 class VerificationNonAdditiveConcatenationTest extends TestCase
 {
     public $pdo;
@@ -27,22 +32,13 @@ class VerificationNonAdditiveConcatenationTest extends TestCase
     public function testExecuteWithTableNotAditive(): void
     {
 
-        $this->createFakeDB();
+        $expectedResult = [
+            'asignaciones,empleados,proyectos' => [
+                'result' => 'NAC',
+            ],
+        ];
 
         $databaseAuditor = new DatabaseAuditor;
-
-        // $databaseAuditor->databaseSchemaGenerators['SchemaFromDatabaseUsingName']= new SchemaFromDatabaseUsingName(
-        //     $databaseAuditor,
-        //     [
-        //         'pathEnvFolder' => '.',
-        //         'name' => '.env',
-        //     ],
-        //     [
-        //         'mode' => 'exclude',
-        //         'tables' => [],
-        //     ] 
-        // );
-
     
         $databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= 
             new SchemaFromJSON(
@@ -54,6 +50,14 @@ class VerificationNonAdditiveConcatenationTest extends TestCase
         $databaseAuditor->generateDatabaseSchema();
 
         $databaseAuditor->executeValidationAlgorithm();
+
+        $result = [];
+
+        foreach ($databaseAuditor->report->verificationList as $key => $value) {
+            $result[$key] = ['result' => $value['result']];
+        }
+
+        $this->assertEqualsCanonicalizing($expectedResult, $result);
 
     }
 
@@ -102,13 +106,13 @@ class VerificationNonAdditiveConcatenationTest extends TestCase
 
         try {
              // Definición de la estructura de la primera tabla: empleados
-             $tablaErrores = 'CREATE TABLE IF NOT EXISTS "errores" (
+             $tablaHelados = 'CREATE TABLE IF NOT EXISTS "helados" (
                 "nombre" VARCHAR(255) NOT NULL,
                 "descripcion" VARCHAR(255)
             )';
         
             // Ejecutar la consulta para crear la tabla empleados
-            $this->pdo->exec($tablaErrores);
+            $this->pdo->exec($tablaHelados);
 
            
             // Definición de la estructura de la primera tabla: empleados

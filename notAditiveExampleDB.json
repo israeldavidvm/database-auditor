@@ -9,16 +9,19 @@
     ],
     "decompositionsByTable":{
         "empleados" : [
-            "nombreE",
-            "ubicacionProyecto"
+             "dni",
+             "nombreE"
+         ],
+         "proyectos" : [
+             "numProyecto",
+             "nombreProyecto",
+             "ubicacionProyecto"
          ],
          "asignaciones" : [
-            "dni",
-            "numProyecto",
-            "horas",
-            "nombreProyecto",
-            "ubicacionProyecto"
-        ]
+             "dni",
+             "numProyecto",
+             "horas"
+         ]
      },
     "functionalDependencies": [
         {
@@ -47,5 +50,14 @@
                 "horas"
             ]
         }
+    ],
+    "joinsClusters": [
+        
+        [
+            "empleados",
+            "asignaciones",
+            "proyectos"
+        ]           
+
     ]
 }

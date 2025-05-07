@@ -5,10 +5,13 @@
 include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
-use Israeldavidvm\DatabaseAuditor\AppCommand; // Asegúrate que este namespace es correcto.
+use Israeldavidvm\DatabaseAuditor\AppCommand; 
+use Israeldavidvm\DatabaseAuditor\MenuCommand;
 
 $application = new Application();
-$application->add(new AppCommand()); // Añade tu comando
+$application->add(new AppCommand()); 
+$application->add(new MenuCommand()); 
+
 $application->run();
 
 ?>

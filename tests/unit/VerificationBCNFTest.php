@@ -16,33 +16,37 @@ use Israeldavidvm\DatabaseAuditor\SchemaFromJSON;
 use Israeldavidvm\DatabaseAuditor\DatabaseAuditor;
 use Israeldavidvm\DatabaseAuditor\VerificationBCNF;
 use Israeldavidvm\DatabaseAuditor\SchemaFromDatabaseUsingName;
+use Israeldavidvm\DatabaseAuditor\Schema;
+use Israeldavidvm\DatabaseAuditor\Report;
+
 
 #[CoversClass(VerificationBCNF::class)]
+#[UsesClass(Schema::class)]
 #[UsesClass(DatabaseAuditor::class)]
 #[UsesClass(SchemaFromJSON::class)]
+#[UsesClass(Report::class)]
+#[UsesClass(VerificationBCNF::class)]
+
+
 class VerificationBCNFTest extends TestCase
 {
     public $pdo;
 
     public function testExecuteWithTableInBCNF(): void
     {
-
-        $this->createFakeDB();
+        $expectedResult = [
+            'asignaciones' => [
+                'result' => 'BCNF',
+            ],
+            'empleados' => [
+                'result' => 'BCNF',
+            ],
+            'proyectos' => [
+                'result' => 'BCNF',
+            ]
+        ];
 
         $databaseAuditor = new DatabaseAuditor;
-
-        // $databaseAuditor->databaseSchemaGenerators['SchemaFromDatabaseUsingName']= new SchemaFromDatabaseUsingName(
-        //     $databaseAuditor,
-        //     [
-        //         'pathEnvFolder' => '.',
-        //         'name' => '.env',
-        //     ],
-        //     [
-        //         'mode' => 'exclude',
-        //         'tables' => [],
-        //     ] 
-        // );
-
     
         $databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= 
             new SchemaFromJSON(
@@ -54,6 +58,50 @@ class VerificationBCNFTest extends TestCase
         $databaseAuditor->generateDatabaseSchema();
 
         $databaseAuditor->executeValidationAlgorithm();
+        
+        $result = [];
+
+        foreach ($databaseAuditor->report->verificationList as $key => $value) {
+            $result[$key] = ['result' => $value['result']];
+        }
+
+        $this->assertEqualsCanonicalizing($expectedResult, $result);
+    }
+
+    public function testExecuteWithTableInNotBCNF(): void
+    {
+        $expectedResult = [
+            'asignaciones' => [
+                'result' => 'BCNF',
+            ],
+            'empleados' => [
+                'result' => 'BCNF',
+            ],
+            'proyectos' => [
+                'result' => 'NotBCNF',
+            ]
+        ];
+
+        $databaseAuditor = new DatabaseAuditor;
+    
+        $databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= 
+            new SchemaFromJSON(
+                $databaseAuditor, __DIR__ . '/../../notBCNFExampleDB.json'
+            );
+
+        $databaseAuditor->validationAlgorithms['VerificationBCNF'] = new VerificationBCNF($databaseAuditor);
+        
+        $databaseAuditor->generateDatabaseSchema();
+
+        $databaseAuditor->executeValidationAlgorithm();
+
+        $result = [];
+
+        foreach ($databaseAuditor->report->verificationList as $key => $value) {
+            $result[$key] = ['result' => $value['result']];
+        }
+
+        $this->assertEqualsCanonicalizing($expectedResult, $result);
 
     }
 
@@ -102,13 +150,13 @@ class VerificationBCNFTest extends TestCase
 
         try {
              // Definición de la estructura de la primera tabla: empleados
-             $tablaErrores = 'CREATE TABLE IF NOT EXISTS "errores" (
+             $tablaHelados = 'CREATE TABLE IF NOT EXISTS "helados" (
                 "nombre" VARCHAR(255) NOT NULL,
                 "descripcion" VARCHAR(255)
             )';
         
             // Ejecutar la consulta para crear la tabla empleados
-            $this->pdo->exec($tablaErrores);
+            $this->pdo->exec($tablaHelados);
 
            
             // Definición de la estructura de la primera tabla: empleados
