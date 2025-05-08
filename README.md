@@ -68,7 +68,7 @@ Este código tiene licencia bajo la licencia pública general de GNU versión 3.
 
 data-auditor es una herramienta integral diseñada para evaluar y optimizar la calidad de tus diseños de bases de datos. Ofrece un conjunto de funcionalidades avanzadas que incluyen:
 
-Validación de formas normales: Asegura que tu diseño cumpla con las primeras tres formas normales, minimizando la redundancia y evitando anomalías en las actualizaciones.
+Validación de formas normales: Asegura que tu diseño cumpla con las formas normales, minimizando la redundancia y evitando anomalías en las actualizaciones.
 
 Comprobación de la propiedad de concatenación no aditiva: Detecta posibles problemas de diseño que podrían afectar los resultados de las consultas.
 
@@ -109,11 +109,10 @@ composer global require israeldavidvm/database-auditor
 
 composer require israeldavidvm/database-auditor
 
-
 ##### Como biblioteca (Solo si quieres crear un programa que use la libreria)
 composer require israeldavidvm/database-auditor
 
-#### Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de ña base de datos el comportamiento por defecto)
+#### Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de la base de datos el comportamiento por defecto)
 
 Establece una configuracion en el archivo .env. como la siguiente
 
@@ -126,30 +125,261 @@ DB_DATABASE=<DatabaseName>
 DB_USERNAME=<UserName>
 DB_PASSWORD=<password>
 
+
+DATA_AUDITOR_FILTER=exclude
+DATA_AUDITOR_ELEMENTS=helado
+DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE=./functionDepedencies.json
+
+
+```
+
+#### Archivo functionalDependencies.json
+
+Un archivo donde se van a configurar las depedencias funcionales de tu base de datos, notese que el nombre viene de la variable de entorno DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE escrita en tu archivo .env
+
+```
+{
+    "functionalDependencies": [
+        {
+            "x": [
+                "dni"
+            ],
+            "y": [
+                "nombreE"
+            ]
+        },
+        {
+            "x": [
+                "nombreProyecto"
+            ],
+            "y": [
+                "ubicacionProyecto"
+            ]
+        },
+        {
+            "x": [
+                "numProyecto"
+            ],
+            "y": [
+                "nombreProyecto",
+                "ubicacionProyecto"
+            ]
+        },
+        {
+            "x": [
+                "dni",
+                "numProyecto"
+            ],
+            "y": [
+                "horas"
+            ]
+        }
+    ]
+}
 ```
 
 ### Uso desde la interfaz de linea de comandos 
 
-Para poder usar el programa solo necesitaras un archivo .env con la configuracion de tu base de datos como se especifico anteriormente y ejecutar el comando
+Para poder usar el programa solo necesitaras un archivo .env con la configuracion de tu base de datos y un archivo .json donde se almacenen las depedencias funcionales
+
+Hay 2 metodos para usar el programa por medio de una CLI interactica o por medio de pasarle los programas directamente a la CLI
+
+#### CLI interactiva database-auditor  menu
+
 
 **Si es incluido en un proyecto por medio de require con el global (composer global require israeldavidvm/database-auditor)**
 
-```~/.config/composer/vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+```~/.config/composer/vendor/bin/database-auditor  menu```
 
 **Si es incluido en un proyecto por medio de require sin el global (composer require israeldavidvm/database-auditor)**
 
-```./vendor/bin/database-auditor  app:audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+```./vendor/bin/database-auditor  menu```
+
+**Si es instalado por medio de install o se parte de la raiz del proyecto (composer install israeldavidvm/database-auditor)**
+
+```composer menu```
+
+```
+Description:
+  Muestra un menú de opciones interactivo.
+
+Usage:
+  menu
+
+Options:
+  -h, --help            Display help for the given command. When no command is given display help for the list command
+      --silent          Do not output any message
+  -q, --quiet           Only errors are displayed. All other output is suppressed
+  -V, --version         Display this application version
+      --ansi|--no-ansi  Force (or disable --no-ansi) ANSI output
+  -n, --no-interaction  Do not ask any interactive question
+  -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+Help:
+  Este comando muestra un menú interactivo y ejecuta acciones basadas en la selección del usuario.
+```
+
+##### Capture menu principal
+
+![Capture Menu principal](image.png)
+
+##### Capture menu probar bases de datos personalizada
+
+![Capture menu opcion 0](image-2.png)
+
+##### Capture menu probar bases de datos de ejemplo
+
+![Capture menu opcion 1](image-1.png)
+
+##### Ejemplo resultados analisis 
+
+```
+Elemento Revisado : Resultado Algoritmo aplicados
+------------------------------------------------
+empleados : BCNF
+proyectos : BCNF
+asignaciones : BCNF
+asignaciones,empleados,proyectos : NAC
+
+Significado de los resultados:
+
+BCNF:Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+NotBCNF:Dado que es falso que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla NO cumple con la definicion de BCNF
+
+NAC:La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+
+NotNAC:La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que  no existe una fila que este compuesta enteramente por símbolos a
+
+VerificationBCNF : Para el algoritmo de verificacion de la BCNF se utilizara la definicion de BCNF propuesta por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+Ademas se utilizara el conjunto de dependencias funcionales no triviales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar el conjunto de dependencias no triviales en la proyección del conjunto de dependencias funcionales para esa descomposición esto debido a que para fines del algoritmo para verificar la BCNF los conjuntos funcionan de forma equivalente.
+
+La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
+
+
+VerificationNonAdditiveConcatenation : El Algoritmo utilizado para la Verificación  de la propiedad de concatenación no aditiva sera el propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+
+Para el esquema de relacion
+empleados(dni, nombreE)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{dni}=>{nombreE}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+Para el esquema de relacion
+proyectos(numProyecto, nombreProyecto, ubicacionProyecto)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{numProyecto}=>{nombreProyecto,ubicacionProyecto}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+Para el esquema de relacion
+asignaciones(dni, numProyecto, horas)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{dni,numProyecto}=>{horas}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+R={dni,nombreE,numProyecto,nombreProyecto,ubicacionProyecto,horas}
+D={
+
+empleados={dni,nombreE}
+
+proyectos={numProyecto,nombreProyecto,ubicacionProyecto}
+
+asignaciones={dni,numProyecto,horas}
+
+}
+Se tienen las siguientes dependencias funcionales
+F={
+
+{dni}=>{nombreE}
+
+{numProyecto}=>{nombreProyecto,ubicacionProyecto}
+
+{dni,numProyecto}=>{horas}
+
+}
+
+Cree una matriz inicial S con una fila i por cada relación Ri en D, y una columna j por cada atributo Aj en R.
+
+Asigne S(i, j):= bij en todas las entradas de la matriz. (∗ cada bij es un símbolo distinto asociado a índices (i, j) ∗)
+
+|b_0_0|b_0_1|b_0_2|b_0_3|b_0_4|b_0_5|
+|b_1_0|b_1_1|b_1_2|b_1_3|b_1_4|b_1_5|
+|b_2_0|b_2_1|b_2_2|b_2_3|b_2_4|b_2_5|
+
+Por cada fila i que representa un esquema de relación Ri 
+    {por cada columna j que representa un atributo Aj
+        {si la (relación Ri incluye un atributo Aj) entonces asignar S(i, j):⫽ aj;};};
+            (∗ cada aj es un símbolo distinto asociado a un índice (j) ∗)
+
+| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
+|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
+| a_0 |b_2_1| a_2 |b_2_3|b_2_4| a_5 |
+
+Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere cambios en S{por cada dependencia funcional X → Y en F{ para todas las filas de S que tengan los mismos símbolos en las columnas correspondientes a  los atributos de X{ hacer que los símbolos de cada columna que se corresponden con un atributo de  Y sean los mismos en todas esas filas siguiendo este patrón: si cualquiera  de las filas tiene un símbolo a para la columna, hacer que el resto de filas  tengan el mismo símbolo a en la columna. Si no existe un símbolo a para el  atributo en ninguna de las filas, elegir uno de los símbolos b para el atributo  que aparezcan en una de las filas y ajustar el resto de filas a ese valor } } }
+
+| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
+|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
+| a_0 |b_2_1| a_2 |b_2_3|b_2_4| a_5 |
+
+
+| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
+|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |
+
+
+| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
+|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |
+
+
+| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
+|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |
+
+La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+```
+
+#### CLI no interactiva database-auditor  audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]
+
+**Si es incluido en un proyecto por medio de require con el global (composer global require israeldavidvm/database-auditor)**
+
+```~/.config/composer/vendor/bin/database-auditor  audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
+
+**Si es incluido en un proyecto por medio de require sin el global (composer require israeldavidvm/database-auditor)**
+
+```./vendor/bin/database-auditor  audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
 
 **Si es instalado por medio de install o se parte de la raiz del proyecto (composer install israeldavidvm/database-auditor)**
 
 ```composer audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]```
 
+```
 Description:
   Este comando te permite realizar una serie de validacionesen tu base de datos redirige la salida para pasar la informacion a un archivo 
 
+Usage:
+  audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]
+
 Arguments:
   validationAlgorithms           Valor de los tipos de algoritmo de validacion a aplicar separados por coma (,) Ejemplo VerificationBCNF,VerificationNonAdditiveConcatenation [default: "VerificationBCNF,VerificationNonAdditiveConcatenation"]
-  databaseSchemaGeneratorConfig  Cadena que especifica el databaseSchemaGenerator y su configuracionDonde la cadena tiene un formato como el siguiente<databaseSchemaGenerator>|<config>Donde <databaseSchemaGenerator> es el Valor del tipo de generador de esquema de base de datoscomo por ejemplo SchemaFromDatabaseUsingName y <config> es la configuracion del generador de esquema de base de datos que dependera del tipo para el caso de SchemaFromDatabaseUsingName tiene el formato <mode>|<tables>|<path> [default: "SchemaFromDatabaseUsingName|exclude|users,migrations,password_resets,failed_jobs,personal_access_tokens,taxonomy_taxonomy|./.env"]
+  databaseSchemaGeneratorConfig  Cadena que especifica el databaseSchemaGenerator y su configuracionDonde la cadena tiene un formato como el siguiente<databaseSchemaGenerator>|<path>Donde<databaseSchemaGenerator>::=SchemaFromDatabaseUsingName|SchemaFromJSON Es decir el Valor del tipo de generador de esquema de base de datos<path>Es la ruta al archivo .json en caso de SchemeFromJson o la ruta al archivo .env en el caso de SchemaFromDatabaseUsingName [default: "SchemaFromDatabaseUsingName|./.env"]
 
 Options:
   -h, --help                     Display help for the given command. When no command is given display help for the list command
@@ -159,6 +389,7 @@ Options:
       --ansi|--no-ansi           Force (or disable --no-ansi) ANSI output
   -n, --no-interaction           Do not ask any interactive question
   -v|vv|vvv, --verbose           Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+```
 
 
 ## Make a donation. Your contribution will make a difference.
@@ -214,6 +445,9 @@ classDiagram
     comunes para todos los algoritmos"
 
     DatabaseAuditor ..> DatabaseSchemaGenerator
+    DatabaseAuditor ..> Report
+    DatabaseAuditor ..> Schema
+
 
     class DatabaseSchemaGenerator{
         <<Abstract>>
@@ -226,8 +460,13 @@ classDiagram
     para la generacion de los 
     esquemas de la base de datos"
 
-    DatabaseSchemaGenerator ..> SchemaFromDBUsingName
-    DatabaseSchemaGenerator ..> SchemaFromJSON
+    DatabaseSchemaGenerator <|-- SchemaFromDBUsingName
+    DatabaseSchemaGenerator <|-- SchemaFromJSON 
+    
+
+    class Schema{
+
+    }
 
     class SchemaFromJSON{
         +databaseAuditor
@@ -239,9 +478,17 @@ classDiagram
         +generate()
     }
 
+    SchemaFromDBUsingName ..> Schema
+    SchemaFromJSON ..> Schema
+
+    note for Schema "Proporciona una 
+    estructura de datos que contine la informacion
+    que utiilizaran los algoritmos de validacion"
+
+
     note for SchemaFromDBUsingName "Es una de las estrategias concretas 
-    que genera los esquemas por medio de los nombres
-     de las convenciones de nombres de la base de datos"
+    que genera los esquemas por medio de de las 
+    convenciones de nombres de la base de datos"
 
     DatabaseAuditor ..> ValidationAlgorithm
 
@@ -253,11 +500,19 @@ classDiagram
     class ValidationAlgorithm{
         <<Abstract>>
         +execute()
+        +explainPossibleResults()$
+        +explainResult(result)$
     }
 
-    ValidationAlgorithm <|-- NonAdditiveConcatenation
+    ValidationAlgorithm <|-- VerificationNonAdditiveConcatenation
     ValidationAlgorithm <|-- VerificationBCNF
 
+    Report <.. VerificationNonAdditiveConcatenation
+    Report <.. VerificationBCNF
+
+    class Report{
+        +addVerification($element,$result,$message)
+    }
 
     class VerificationNonAdditiveConcatenation{
         +databaseAuditor
@@ -265,7 +520,7 @@ classDiagram
     }
 
 
-    note for NonAdditiveConcatenation "Encapsula el Algoritmo 11.1 de Verificación 
+    note for VerificationNonAdditiveConcatenation "Encapsula el Algoritmo 11.1 de Verificación 
 de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI 
 y SHAMKANT B. NAVATHE"
 
@@ -274,7 +529,7 @@ y SHAMKANT B. NAVATHE"
         +execute()
     }
 
-    note for NonAdditiveConcatenation "Encapsula el Algoritmo que valida que cada 
+    note for VerificationBCNF "Encapsula el Algoritmo que valida que cada 
     descomposicion posea la BCNF 
     en base a la definicion presentada 
     por RAMEZ ELMASRI y SHAMKANT B. NAVATHE"
