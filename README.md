@@ -3,20 +3,41 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [data-auditor](#data-auditor)
-  - [¡Optimiza tu diseño de bases de datos con data-auditor!](#%C2%A1optimiza-tu-dise%C3%B1o-de-bases-de-datos-con-data-auditor)
+  - [¡Asegura la calidad de tus bases de datos con data-auditor!](#%C2%A1asegura-la-calidad-de-tus-bases-de-datos-con-data-auditor)
   - [Licencia](#licencia)
-  - [Caracteristicas ¿Qué te ofrece data-auditor?](#caracteristicas-%C2%BFqu%C3%A9-te-ofrece-data-auditor)
+  - [Caracteristicas ¿Qué ofrece data-auditor?](#caracteristicas-%C2%BFqu%C3%A9-ofrece-data-auditor)
+    - [Deteccion de Amenazas : Valida formas normales, identifica problemas de concatenación no aditiva, etc.](#deteccion-de-amenazas--valida-formas-normales-identifica-problemas-de-concatenaci%C3%B3n-no-aditiva-etc)
+    - [Interfaz de línea de comandos](#interfaz-de-l%C3%ADnea-de-comandos)
+  - [Justificacion](#justificacion)
   - [Challenges conquered / Desafíos Conquistados](#challenges-conquered--desaf%C3%ADos-conquistados)
   - [Features to implement / Caracteristicas a implementar](#features-to-implement--caracteristicas-a-implementar)
-  - [Planning, Requirements Engineering and risk management / Planeacion, Ingenieria de Requerimientos y gestion del riesgo](#planning-requirements-engineering-and-risk-management--planeacion-ingenieria-de-requerimientos-y-gestion-del-riesgo)
-  - [Software Design / Diseño de Software](#software-design--dise%C3%B1o-de-software)
+  - [Uso](#uso)
+    - [Requisitos](#requisitos)
+      - [Instalacion](#instalacion)
+        - [Como usuario](#como-usuario)
+        - [Como biblioteca (Solo si quieres crear un programa que use la libreria)](#como-biblioteca-solo-si-quieres-crear-un-programa-que-use-la-libreria)
+      - [Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de la base de datos el comportamiento por defecto)](#archivo-env-esto-es-necesario-cuando-se-quiere-generar-un-esquema-a-partir-de-la-base-de-datos-el-comportamiento-por-defecto)
+      - [Archivo functionalDependencies.json](#archivo-functionaldependenciesjson)
+    - [Uso desde la interfaz de linea de comandos](#uso-desde-la-interfaz-de-linea-de-comandos)
+      - [CLI interactiva database-auditor  menu](#cli-interactiva-database-auditor--menu)
+        - [Capture menu principal](#capture-menu-principal)
+        - [Capture menu probar bases de datos de ejemplo](#capture-menu-probar-bases-de-datos-de-ejemplo)
+        - [Capture menu probar bases de datos personalizada](#capture-menu-probar-bases-de-datos-personalizada)
+        - [Ejemplo resultados analisis](#ejemplo-resultados-analisis)
+      - [CLI no interactiva database-auditor  audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]](#cli-no-interactiva-database-auditor--audit-database-validationalgorithms-databaseschemageneratorconfig)
+  - [Make a donation. Your contribution will make a difference.](#make-a-donation-your-contribution-will-make-a-difference)
+  - [Find me on:](#find-me-on)
+  - [Planeacion, Ingenieria de requerimientos, gestion del riesgo y evolucion](#planeacion-ingenieria-de-requerimientos-gestion-del-riesgo-y-evolucion)
+  - [Diseño de Software](#dise%C3%B1o-de-software)
+    - [¿Como funciona?](#%C2%BFcomo-funciona)
     - [Perspectiva Estructural](#perspectiva-estructural)
       - [Vista Logica de la Arquitectura del software](#vista-logica-de-la-arquitectura-del-software)
     - [Perspectiva de comportamiento](#perspectiva-de-comportamiento)
       - [SchemaFromDatabaseUsingName.generateJoinsClusters process / Proceso de SchemaFromDatabaseUsingName.generateJoinsClusters](#schemafromdatabaseusingnamegeneratejoinsclusters-process--proceso-de-schemafromdatabaseusingnamegeneratejoinsclusters)
       - [SchemaFromDatabaseUsingName.generate() process / Proceso de SchemaFromDatabaseUsingName.generate()](#schemafromdatabaseusingnamegenerate-process--proceso-de-schemafromdatabaseusingnamegenerate)
-  - [Verification and Validation / Validacion y Verificacion](#verification-and-validation--validacion-y-verificacion)
+  - [Validacion y Verificacion](#validacion-y-verificacion)
     - [Formal validation / Validacion Formal](#formal-validation--validacion-formal)
+  - [MultipleReferencedEntitiesCollision](#multiplereferencedentitiescollision)
       - [getFunctionalDependenciesForBCNFInTable](#getfunctionaldependenciesforbcnfintable)
         - [BCNF Definition / Definicion BCNF](#bcnf-definition--definicion-bcnf)
         - [Closing a set of Functional Dependencies / Clasura de un conjunto de dependencias funcionales](#closing-a-set-of-functional-dependencies--clasura-de-un-conjunto-de-dependencias-funcionales)
@@ -26,7 +47,7 @@
           - [Reglas de de aumento y pseudo-transitividad](#reglas-de-de-aumento-y-pseudo-transitividad)
   - [Documentacion](#documentacion)
     - [Convenciones usadas durante la docuemntacion](#convenciones-usadas-durante-la-docuemntacion)
-    - [Generacion de esquemas](#generacion-de-esquemas)
+    - [Generacion de estructuras necesarias para los algoritmos](#generacion-de-estructuras-necesarias-para-los-algoritmos)
       - [DatabaseAuditor](#databaseauditor)
       - [DatabaseSchemaGenerator](#databaseschemagenerator)
       - [SchemaFromDBUsingName](#schemafromdbusingname)
@@ -39,15 +60,6 @@
       - [ValidationAlgorithm](#validationalgorithm)
         - [VerificationNonAdditiveConcatenation](#verificationnonadditiveconcatenation)
         - [VerificationBCNF](#verificationbcnf)
-    - [Uso](#uso)
-      - [Requisitos](#requisitos)
-        - [Instalacion](#instalacion)
-          - [Como usuario](#como-usuario)
-          - [Como biblioteca (Solo si quieres crear un programa que use la libreria)](#como-biblioteca-solo-si-quieres-crear-un-programa-que-use-la-libreria)
-        - [Archivo .env (esto es necesario cuando se quiere generar un esquema a partir de ña base de datos el comportamiento por defecto)](#archivo-env-esto-es-necesario-cuando-se-quiere-generar-un-esquema-a-partir-de-%C3%B1a-base-de-datos-el-comportamiento-por-defecto)
-      - [Uso desde la interfaz de linea de comandos](#uso-desde-la-interfaz-de-linea-de-comandos)
-    - [Make a donation. Your contribution will make a difference.](#make-a-donation-your-contribution-will-make-a-difference)
-    - [Find me on:](#find-me-on)
   - [Technologies used / Tecnologias usadas](#technologies-used--tecnologias-usadas)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -57,24 +69,34 @@
 
 [Readme version in English](./README-EN.md)
 
-## ¡Optimiza tu diseño de bases de datos con data-auditor!
-¿Quieres asegurarte de que tu base de datos esté libre de redundancias, anomalías y problemas de diseño? Con data-auditor, obtén las herramientas necesarias para validar formas normales, analizar dependencias funcionales y garantizar un diseño robusto y eficiente. ¡Prueba nuestra interfaz de línea de comandos y lleva tu base de datos al siguiente nivel!
+## ¡Asegura la calidad de tus bases de datos con data-auditor!
+
+![alt text](image.png)
+
+¿Quieres asegurarte de la calidad de tu base de datos? 
+
+Con data-auditor, obtén las herramientas que te ayudaran a cumplir con las mejores practicas en tema de diseño de base de datos, asegura la integridad estructural, evita redundancias y anomalías, valida formas normales, verifica la propiedad de concatenacion no aditiva, analiza dependencias funcionales, etc. 
+
+¡Prueba nuestra interfaz de línea de comandos y asegura la calidad de tus bases de datos!
 
 ## Licencia
 
 Este código tiene licencia bajo la licencia pública general de GNU versión 3.0 o posterior (LGPLV3+). Puede encontrar una copia completa de la licencia en https://www.gnu.org/licenses/lgpl-3.0-standalone.htmlalone.html0-standalone.html
 
-## Caracteristicas ¿Qué te ofrece data-auditor?
+## Caracteristicas ¿Qué ofrece data-auditor?
 
-data-auditor es una herramienta integral diseñada para evaluar y optimizar la calidad de tus diseños de bases de datos. Ofrece un conjunto de funcionalidades avanzadas que incluyen:
+data-auditor es una herramienta integral diseñada para garantizar la calidad de tus bases de datos. Ofrece un conjunto de funcionalidades avanzadas que te permiten:
 
-Validación de formas normales: Asegura que tu diseño cumpla con las formas normales, minimizando la redundancia y evitando anomalías en las actualizaciones.
+### Deteccion de Amenazas : Valida formas normales, identifica problemas de concatenación no aditiva, etc.
 
-Comprobación de la propiedad de concatenación no aditiva: Detecta posibles problemas de diseño que podrían afectar los resultados de las consultas.
+- Validación de formas normales: Asegura que tu diseño cumpla con las formas normales, minimizando la redundancia y evitando anomalías en las actualizaciones.
 
-Análisis de dependencias funcionales: Facilita la comprensión de las relaciones entre los atributos de las tablas, permitiendo un diseño más robusto y eficiente.
+- Comprobación de la propiedad de concatenación no aditiva: Detecta posibles problemas de diseño que podrían afectar los resultados de las consultas.
 
-Interfaz de línea de comandos: Proporciona una forma sencilla y directa de utilizar la librería, ideal para integración en flujos de trabajo automatizados.
+
+### Interfaz de línea de comandos 
+
+- Interfaz de línea de comandos que proporciona una forma sencilla y directa de utilizar la librería, ideal para integración en flujos de trabajo automatizados.
 
 Con data-auditor, podrás garantizar un diseño de base de datos sólido, eficiente y libre de errores comunes.
 
@@ -222,13 +244,14 @@ Help:
 
 ![Capture Menu principal](image.png)
 
-##### Capture menu probar bases de datos personalizada
-
-![Capture menu opcion 0](image-2.png)
-
 ##### Capture menu probar bases de datos de ejemplo
 
-![Capture menu opcion 1](image-1.png)
+![alt text](image-1.png)
+
+##### Capture menu probar bases de datos personalizada
+
+
+![alt text](image-2.png)
 
 ##### Ejemplo resultados analisis 
 
@@ -785,8 +808,7 @@ Para el caso de la validacion de la BCNF podemos usar el
 
 ## Documentacion
 
-El paquete data-auditor permite realizar una serie de validaciones y mejoras a la calidad del diseño de una base de datos como la comprobacion de formas normales, verificación 
-de la propiedad de concatenación no aditiva, etc.
+El paquete data-auditor permite realizar una serie de validaciones y mejoras a la calidad del diseño de una base de datos como la comprobacion de formas normales, verificación de la propiedad de concatenación no aditiva, etc.
 
 ### Convenciones usadas durante la docuemntacion
 
