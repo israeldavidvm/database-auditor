@@ -128,6 +128,7 @@ composer install israeldavidvm/database-auditor
 composer global require israeldavidvm/database-auditor
 
 composer require israeldavidvm/database-auditor
+
 ##### As a library (Only if you want to create a program that uses the library)
 composer require israeldavidvm/database-auditor
 

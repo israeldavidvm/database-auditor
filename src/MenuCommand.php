@@ -13,7 +13,7 @@ class MenuCommand extends Command
 {
 
     protected $databaseAuditor;
-
+    protected $helper;
     public static function generateCover(){
         return ''.
         '     ____            __                    ___                __    _    __                 '.PHP_EOL.
@@ -45,8 +45,8 @@ class MenuCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
+        /** @var QuestionHelper $this->helper */
+        $this->helper = $this->getHelper('question');
 
         $question = new ChoiceQuestion(self::generateCover().
         'Por favor, selecciona una opción:',
@@ -60,7 +60,7 @@ class MenuCommand extends Command
 
         $question->setErrorMessage('Opción %s no es válida.');
 
-        $seleccion = $helper->ask($input, $output, $question);
+        $seleccion = $this->helper->ask($input, $output, $question);
 
         $output->writeln('Has seleccionado: ' . $seleccion);
 
@@ -88,8 +88,8 @@ class MenuCommand extends Command
         // Aquí puedes implementar la lógica para probar bases de datos de ejemplo
         $output->writeln('Analizando bases de datos perzonalizada.');                
         
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
+        /** @var QuestionHelper $this->helper */
+        $this->helper = $this->getHelper('question');
 
         $question = new ChoiceQuestion(
             'Por favor, selecciona un mecanismo(DatabaseSchemaGenerator) para obtener los datos de la base de datos:',
@@ -105,7 +105,7 @@ class MenuCommand extends Command
 
         $question->setErrorMessage('Opción %s no es válida.');
 
-        $seleccion = $helper->ask($input, $output, $question);
+        $seleccion = $this->helper->ask($input, $output, $question);
 
         $output->writeln('Has seleccionado: ' . $seleccion);
 
@@ -116,7 +116,7 @@ class MenuCommand extends Command
                 ' el archivo .env (SchemaFromDatabaseUsingName)':
                 $schemaGenerator=SchemaFromDatabaseUsingName::class;
                 $questionPath = new Question('Por favor, introduce la ruta al archivo .env: ');
-                $path = $helper->ask($input, $output, $questionPath);
+                $path = $this->helper->ask($input, $output, $questionPath);
                 if (empty($path)) {
                     $output->writeln('<error>La ruta del archivo no puede estar vacía.</error>');
                     return Command::FAILURE;
@@ -126,7 +126,7 @@ class MenuCommand extends Command
                 ' un archivo .json (SchemaFromJSON)':
                 $schemaGenerator=SchemaFromJSON::class;
                 $questionPath = new Question('Por favor, introduce la ruta al archivo .json: ');
-                $path = $helper->ask($input, $output, $questionPath);
+                $path = $this->helper->ask($input, $output, $questionPath);
                 if (empty($path)) {
                     $output->writeln('<error>La ruta del archivo no puede estar vacía.</error>');
                     return Command::FAILURE;
@@ -156,7 +156,8 @@ class MenuCommand extends Command
 
         $this->databaseAuditor->executeValidationAlgorithm();
 
-        $this->databaseAuditor->printReport();
+        $this->createFileRequired($input,$output,$this->databaseAuditor->reportToString());
+
 
     }
 
@@ -165,8 +166,8 @@ class MenuCommand extends Command
         // Aquí puedes implementar la lógica para probar bases de datos de ejemplo
         $output->writeln('Probando bases de datos de ejemplo...');                
         
-        /** @var QuestionHelper $helper */
-        $helper = $this->getHelper('question');
+        /** @var QuestionHelper $this->helper */
+        $this->helper = $this->getHelper('question');
 
         $question = new ChoiceQuestion(
             'Por favor, selecciona una bases de datos que quieras probar:',
@@ -183,7 +184,7 @@ class MenuCommand extends Command
 
         $question->setErrorMessage('Opción %s no es válida.');
 
-        $seleccion = $helper->ask($input, $output, $question);
+        $seleccion = $this->helper->ask($input, $output, $question);
 
         $output->writeln('Has seleccionado: ' . $seleccion);
 
@@ -230,6 +231,50 @@ class MenuCommand extends Command
         $this->databaseAuditor->executeValidationAlgorithm();
 
         $this->databaseAuditor->printReport();
+        
+    
+    }
+
+    protected function createFileRequired($input,$output,$content){
+
+        $createdFile=$this->createFile($input,$output,$this->databaseAuditor->reportToString());
+
+        while(!$createdFile){
+            $createdFile=$this->createFile($input,$output,$this->databaseAuditor->reportToString());
+        }
 
     }
+    
+    protected function createFile($input,$output,$content){
+
+        $questionPath = new Question('Por favor, introduce la ruta al archivo en el que quieres almacenar los resultados ');
+        $path = $this->helper->ask($input, $output, $questionPath);
+        if (empty($path)) {
+            $output->writeln('<error>La ruta del archivo no puede estar vacía.</error>');
+            return false;
+        }
+
+        $this->printToFile($path, $content);
+
+        return true;
+    }
+
+    public function printToFile(string $filePath, string $content): void
+{
+    $directory = dirname($filePath);
+
+    if (!is_dir($directory)) {
+        if (!mkdir($directory, 0777, true)) {
+            echo "Error al crear el directorio: " . $directory . PHP_EOL;
+            return;
+        }
+    }
+
+    if (file_put_contents($filePath, $content ) === false) {
+        echo "Error al escribir en el archivo: " . $filePath . PHP_EOL;
+    } else {
+        // Opcional: Puedes agregar un mensaje indicando que se escribió en el archivo
+        echo "Información agregada al archivo: " . $filePath . PHP_EOL;
+    }
+}
 }

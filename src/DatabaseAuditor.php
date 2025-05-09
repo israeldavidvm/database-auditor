@@ -64,26 +64,36 @@ class DatabaseAuditor {
 
     public function printReport(){
 
-        echo "Elemento Revisado : Resultado Algoritmo aplicados".PHP_EOL;
-        echo "------------------------------------------------".PHP_EOL;
+        echo $this->reportToString();
+    }
+
+    public function reportToString(): string
+    {
+
+
+        $content = "Elemento Revisado : Resultado Algoritmo aplicados" . PHP_EOL;
+        $content .= "------------------------------------------------" . PHP_EOL;
 
         foreach ($this->report->verificationList as $key => $verification) {
-            echo $key." : ".$verification['result'].PHP_EOL;
+            $content .= $key . " : " . $verification['result'] . PHP_EOL;
         }
 
-        echo PHP_EOL.'Significado de los resultados:'.PHP_EOL.PHP_EOL;
+        $content .= PHP_EOL . 'Significado de los resultados:' . PHP_EOL . PHP_EOL;
 
         foreach ($this->validationAlgorithms as $validationAlgorithmName => $validationAlgorithm) {
-            echo $validationAlgorithm::explainPossibleResults();
+            $content .= $validationAlgorithm::explainPossibleResults();
         }
 
         foreach ($this->validationAlgorithms as $validationAlgorithmName => $validationAlgorithm) {
-            echo $validationAlgorithmName." : ".$validationAlgorithm->explainAlgorithm()."\n";
+            $content .= $validationAlgorithmName . " : " . $validationAlgorithm->explainAlgorithm() . "\n";
         }
 
         foreach ($this->report->verificationList as $key => $verification) {
-            echo $verification['message']."\n";
-        } 
+            $content .= $verification['message'] . "\n";
+        }
+
+        return $content;
+
     }
 
 }
