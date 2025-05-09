@@ -176,6 +176,16 @@ class VerificationNonAdditiveConcatenation extends ValidationAlgorithm {
 
     }
 
+    public static function isGoodResult($result){
+
+        if($result=='NAC'){
+            return true;
+        }
+
+        return false;
+
+    }
+
     public static function explainAlgorithm(): string
     {
         return "El Algoritmo utilizado para la".

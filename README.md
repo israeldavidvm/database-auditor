@@ -340,8 +340,10 @@ Help:
 
 ##### Ejemplo resultados analisis 
 
+![alt text](image-3.png)
+
 ```
-Elemento Revisado : Resultado Algoritmo aplicados
+Elementos Revisados : Resultados Algoritmos aplicados
 ------------------------------------------------
 persons : BCNF
 person_person : BCNF
@@ -473,6 +475,7 @@ Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere
 |b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
 La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+
 ```
 
 #### CLI no interactiva database-auditor  audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]

@@ -332,61 +332,67 @@ This command displays an interactive menu and executes actions based on the user
 
 ##### Analysis Results Example
 
+![alt text](image-3.png)
+
 ```
-Reviewed Element: Applied Algorithm Result
+Elementos Revisados : Resultados Algoritmos aplicados
 ------------------------------------------------
-persons: BCNF
-person_person: BCNF
-scores: BCNF
-person_person,person_supervisaddos,person_supervisors,scores: NAC
+persons : BCNF
+person_person : BCNF
+scores : BCNF
+person_person,person_supervisaddos,person_supervisors,scores : NAC
 
-Meaning of the results:
+Significado de los resultados:
 
-BCNF: Since for every non-trivial functional dependency in the set of functional dependencies F the antecedent is a superkey, the table satisfies the definition of BCNF.
+BCNF:Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
-NotBCNF: Since it is false that for every non-trivial functional dependency in the set of functional dependencies F the antecedent is a superkey, the table does NOT satisfy the definition of BCNF.
+NotBCNF:Dado que es falso que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla NO cumple con la definicion de BCNF
 
-NAC: The decomposition D={R1, R2, . . . , Rm} of R if it has the lossless (non-additive) concatenation property with respect to the set of dependencies F in R given that a row consists entirely of symbols a
+NAC:La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
 
-NotNAC: The decomposition D={R1, R2, . . . , Rm} of R does not have the property of lossless (non-additive) concatenation with respect to the set of dependencies F in R since there is no row composed entirely of symbols a
+NotNAC:La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que  no existe una fila que este compuesta enteramente por símbolos a
 
-VerificationBCNF: For the BCNF verification algorithm, the definition of BCNF proposed by RAMEZ ELMASRI and SHAMKANT B. NAVATHE will be used.
+VerificationBCNF : Para el algoritmo de verificacion de la BCNF se utilizara la definicion de BCNF propuesta por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
 
-Furthermore, the set of non-trivial functional dependencies in which both the antecedent and the consequent are subsets of the set of attributes of the decomposition will be used, instead of using the set of non-trivial dependencies in the projection of the set of functional dependencies for that decomposition. This is because for the purposes of the BCNF verification algorithm, the sets function equivalently.
+Ademas se utilizara el conjunto de dependencias funcionales no triviales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar el conjunto de dependencias no triviales en la proyección del conjunto de dependencias funcionales para esa descomposición esto debido a que para fines del algoritmo para verificar la BCNF los conjuntos funcionan de forma equivalente.
 
-The formal proof of this statement can be found in the README.md of the database-auditor package.
+La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
 
-VerificationNonAdditiveConcatenation: The algorithm used for verifying the non-additive concatenation property will be the one proposed by RAMEZ ELMASRI and SHAMKANT B. NAVATHE.
 
-For the relational schema
+VerificationNonAdditiveConcatenation : El Algoritmo utilizado para la Verificación  de la propiedad de concatenación no aditiva sera el propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+
+Para el esquema de relacion
 persons(person_id, person_name)
-The following functional dependencies exist:
+Se tienen las siguientes dependencias funcionales
 F={
 
 {person_id}=>{person_name}
 
 }
-Since for every non-trivial functional dependency in the set of functional dependencies F, the antecedent is a superkey, the table satisfies the BCNF definition.
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
-For the relational schema
-person_person(person_person_id, person_supervisor_id, person_supervised_id, score_id)
-The following functional dependencies exist:
+
+Para el esquema de relacion
+person_person(person_person_id, person_supervisor_id, person_supervisaddo_id, score_id)
+Se tienen las siguientes dependencias funcionales
 F={
 
-{person_person_id}=>{person_supervisor_id, person_supervised_id, score_id}
+{person_person_id}=>{person_supervisor_id,person_supervisaddo_id,score_id}
 
 }
-Since for every non-trivial functional dependency in the set of functional dependencies F is the antecedent of a super key, and the table satisfies the definition of BCNF.
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
-For the relational schema
+
+Para el esquema de relacion
 scores(score_id, score_name)
-The following functional dependencies exist:
+Se tienen las siguientes dependencias funcionales
 F={
 
 {score_id}=>{score_name}
 
 }
-Since for every non-trivial functional dependency in the set of functional dependencies F, the antecedent is a super key, the table satisfies the definition of BCNF
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
 
 R={person_person_id,person_supervisor_id,person_supervisaddo_id,score_id,person_supervisor_name,person_supervisaddo_name,score_name}
@@ -401,41 +407,67 @@ person_supervisaddos={person_supervisaddo_id,person_supervisaddo_name}
 scores={score_id,score_name}
 
 }
-There are the following dependencies Functionals
+Se tienen las siguientes dependencias funcionales
 F={
 
 {score_id}=>{score_name}
 
 {person_id}=>{person_name}
 
-{person_person_id}=>{person_supervisor_id,person_supervised_id,score_id}
+{person_person_id}=>{person_supervisor_id,person_supervisaddo_id,score_id}
 
-{person_supervised_id}=>{person_supervised_name}
+{person_supervisaddo_id}=>{person_supervisaddo_name}
 
 {person_supervisor_id}=>{person_supervisor_name}
 
 }
 
-Create an initial matrix S with row i for each relation Ri in D, and column j for each attribute Aj in R.
+Cree una matriz inicial S con una fila i por cada relación Ri en D, y una columna j por cada atributo Aj en R.
 
-Assign S(i, j):= bij to all entries in the matrix. (* each bij is a distinct symbol associated with indices (i, j) ∗)
+Asigne S(i, j):= bij en todas las entradas de la matriz. (∗ cada bij es un símbolo distinto asociado a índices (i, j) ∗)
 
 |b_0_0|b_0_1|b_0_2|b_0_3|b_0_4|b_0_5|b_0_6|
 |b_1_0|b_1_1|b_1_2|b_1_3|b_1_4|b_1_5|b_1_6|
 |b_2_0|b_2_1|b_2_2|b_2_3|b_2_4|b_2_5|b_2_6|
 |b_3_0|b_3_1|b_3_2|b_3_3|b_3_4|b_3_5|b_3_6|
 
-For each row i representing a relation schema Ri
-{for each column j representing an attribute Aj
-{if the (relation Ri includes an attribute Aj) then assign S(i, j):⫽ aj;};};
-(* each aj is a distinct symbol associated with an index (j) ∗)
+Por cada fila i que representa un esquema de relación Ri 
+    {por cada columna j que representa un atributo Aj
+        {si la (relación Ri incluye un atributo Aj) entonces asignar S(i, j):⫽ aj;};};
+            (∗ cada aj es un símbolo distinto asociado a un índice (j) ∗)
 
 | a_0 | a_1 | a_2 | a_3 |b_0_4|b_0_5|b_0_6|
 |b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
 |b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
 |b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
-Repeat the following loop until a full execution of the loop produces no changes in S{for each functional dependency X → Y in F{for all rows of S that have the same symbols in the columns corresponding to the attributes of X{make the symbols in each column that correspond to an attribute of Y the same in all those rows following this pattern: if any
+Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere cambios en S{por cada dependencia funcional X → Y en F{ para todas las filas de S que tengan los mismos símbolos en las columnas correspondientes a  los atributos de X{ hacer que los símbolos de cada columna que se corresponden con un atributo de  Y sean los mismos en todas esas filas siguiendo este patrón: si cualquiera  de las filas tiene un símbolo a para la columna, hacer que el resto de filas  tengan el mismo símbolo a en la columna. Si no existe un símbolo a para el  atributo en ninguna de las filas, elegir uno de los símbolos b para el atributo  que aparezcan en una de las filas y ajustar el resto de filas a ese valor } } }
+
+| a_0 | a_1 | a_2 | a_3 |b_0_4|b_0_5|b_0_6|
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
+
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
+
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
+
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
+
+La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+
 ```
 
 #### Non-interactive CLI database-auditor audit-database [<validationAlgorithms> [<databaseSchemaGeneratorConfig>]]

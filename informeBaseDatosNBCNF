@@ -1,0 +1,61 @@
+Elementos Revisados : Resultados Algoritmos aplicados
+------------------------------------------------
+empleados : BCNF
+proyectos : NotBCNF <------REVISAR
+asignaciones : BCNF
+
+Significado de los resultados:
+
+BCNF:Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+NotBCNF:Dado que es falso que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla NO cumple con la definicion de BCNF
+
+NAC:La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+
+NotNAC:La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que  no existe una fila que este compuesta enteramente por símbolos a
+
+VerificationBCNF : Para el algoritmo de verificacion de la BCNF se utilizara la definicion de BCNF propuesta por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+Ademas se utilizara el conjunto de dependencias funcionales no triviales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar el conjunto de dependencias no triviales en la proyección del conjunto de dependencias funcionales para esa descomposición esto debido a que para fines del algoritmo para verificar la BCNF los conjuntos funcionan de forma equivalente.
+
+La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
+
+
+VerificationNonAdditiveConcatenation : El Algoritmo utilizado para la Verificación  de la propiedad de concatenación no aditiva sera el propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+
+Para el esquema de relacion
+empleados(dni, nombreE)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{dni}=>{nombreE}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+Para el esquema de relacion
+proyectos(numProyecto, nombreProyecto, ubicacionProyecto)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{nombreProyecto}=>{ubicacionProyecto}
+
+{numProyecto}=>{nombreProyecto,ubicacionProyecto}
+
+}
+Dado que es falso que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla NO cumple con la definicion de BCNF
+
+
+Para el esquema de relacion
+asignaciones(dni, numProyecto, horas)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{dni,numProyecto}=>{horas}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+

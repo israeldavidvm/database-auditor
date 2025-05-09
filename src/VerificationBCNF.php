@@ -84,6 +84,16 @@ class VerificationBCNF extends ValidationAlgorithm {
 
     }
 
+    public static function isGoodResult($result){
+
+        if($result=='BCNF'){
+            return true;
+        }
+
+        return false;
+
+    }
+
     public static function explainAlgorithm(): string
     {
         return "Para el algoritmo de verificacion de la BCNF se utilizara la definicion de BCNF propuesta por".

@@ -9,6 +9,9 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Question\Question;
 
+use Symfony\Component\Console\Helper\ProgressBar;
+
+
 class MenuCommand extends Command
 {
 
@@ -140,25 +143,14 @@ class MenuCommand extends Command
                 return Command::FAILURE; // Indica un fallo
         }
 
+        $databaseAuditor = new DatabaseAuditor;
 
-        $this->databaseAuditor = new DatabaseAuditor;
-
-        $this->databaseAuditor->databaseSchemaGenerators[$schemaGenerator]= new $schemaGenerator(
-            $this->databaseAuditor,
+        $databaseSchemaGenerators[$schemaGenerator]= new $schemaGenerator(
+            $databaseAuditor,
             $path
         );
 
-        $this->databaseAuditor->generateDatabaseSchema();
-
-        $this->databaseAuditor->validationAlgorithms['VerificationBCNF']= new VerificationBCNF($this->databaseAuditor);
-
-        $this->databaseAuditor->validationAlgorithms['VerificationNonAdditiveConcatenation']= new VerificationNonAdditiveConcatenation($this->databaseAuditor);
-
-        $this->databaseAuditor->executeValidationAlgorithm();
-
-        $this->createFileRequired($input,$output,$this->databaseAuditor->reportToString());
-
-
+        $this->appLogic($input,$output,$databaseAuditor,$databaseSchemaGenerators);
     }
 
     protected function selectTestDatabases($input, $output) 
@@ -215,39 +207,68 @@ class MenuCommand extends Command
         }
 
 
-        $this->databaseAuditor = new DatabaseAuditor;
+        $databaseAuditor = new DatabaseAuditor;
 
-        $this->databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= new SchemaFromJSON(
-            $this->databaseAuditor,
+        $databaseSchemaGenerators['SchemaFromJSON']= new SchemaFromJSON(
+            $databaseAuditor,
             $path
         );
 
-        $this->databaseAuditor->generateDatabaseSchema();
-
-        $this->databaseAuditor->validationAlgorithms['VerificationBCNF']= new VerificationBCNF($this->databaseAuditor);
-
-        $this->databaseAuditor->validationAlgorithms['VerificationNonAdditiveConcatenation']= new VerificationNonAdditiveConcatenation($this->databaseAuditor);
-
-        $this->databaseAuditor->executeValidationAlgorithm();
-
-        $this->databaseAuditor->printReport();
-        
-    
+        $this->appLogic($input,$output,$databaseAuditor,$databaseSchemaGenerators);
+            
     }
 
-    protected function createFileRequired($input,$output,$content){
 
-        $createdFile=$this->createFile($input,$output,$this->databaseAuditor->reportToString());
+    protected function appLogic($input,$output,$databaseAuditor,$schemaGenerators){
+
+        $databaseAuditor->databaseSchemaGenerators= $schemaGenerators;
+
+        $databaseAuditor->generateDatabaseSchema();
+
+        $databaseAuditor->validationAlgorithms['VerificationBCNF']= new VerificationBCNF($databaseAuditor);
+
+        $databaseAuditor->validationAlgorithms['VerificationNonAdditiveConcatenation']= new VerificationNonAdditiveConcatenation($databaseAuditor);
+
+        $databaseAuditor->executeValidationAlgorithm();
+
+        $this->printResumeReport($output,$databaseAuditor);
+
+        $this->createFileRequired($input,$output,$databaseAuditor,$databaseAuditor->reportToString());
+
+    }
+
+    protected function printResumeReport($output,$databaseAuditor){
+
+        echo "Elementos totales(ET): ".$databaseAuditor->numScanElements().PHP_EOL;
+        echo "Elementos en buen estado(EG): ".$databaseAuditor->numGoodStateElements().PHP_EOL;
+
+        echo "EG/ET ";
+        $progressBar = new ProgressBar($output,
+            $databaseAuditor->numScanElements()
+        );                   
+
+        $progressBar->start(null, $databaseAuditor->numGoodStateElements());
+        $output->writeln(PHP_EOL);                        
+
+        $output->writeln(
+            $databaseAuditor->reportResumeToString()
+        );     
+
+    }
+
+    protected function createFileRequired($input,$output,$databaseAuditor,$content){
+
+        $createdFile=$this->createFile($input,$output,$databaseAuditor->reportToString());
 
         while(!$createdFile){
-            $createdFile=$this->createFile($input,$output,$this->databaseAuditor->reportToString());
+            $createdFile=$this->createFile($input,$output,$databaseAuditor->reportToString());
         }
 
     }
     
     protected function createFile($input,$output,$content){
 
-        $questionPath = new Question('Por favor, introduce la ruta al archivo en el que quieres almacenar los resultados ');
+        $questionPath = new Question('Por favor, introduce la ruta al archivo en el que quieres almacenar los resultados de forma detallada ');
         $path = $this->helper->ask($input, $output, $questionPath);
         if (empty($path)) {
             $output->writeln('<error>La ruta del archivo no puede estar vacía.</error>');

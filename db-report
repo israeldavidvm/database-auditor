@@ -1,0 +1,110 @@
+Elemento Revisado : Resultado Algoritmo aplicados
+------------------------------------------------
+helados : BCNF
+empleados : BCNF
+asignaciones : BCNF
+asignaciones,empleados : NAC
+
+Significado de los resultados:
+
+BCNF:Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+NotBCNF:Dado que es falso que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla NO cumple con la definicion de BCNF
+
+NAC:La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+
+NotNAC:La descomposición D={R1, R2, . . . , Rm} de R No tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que  no existe una fila que este compuesta enteramente por símbolos a
+
+VerificationBCNF : Para el algoritmo de verificacion de la BCNF se utilizara la definicion de BCNF propuesta por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+Ademas se utilizara el conjunto de dependencias funcionales no triviales en el que tanto el antecedente como el consecuente son subconjuntos del conjunto de atributos de la descomposición, en lugar de utilizar el conjunto de dependencias no triviales en la proyección del conjunto de dependencias funcionales para esa descomposición esto debido a que para fines del algoritmo para verificar la BCNF los conjuntos funcionan de forma equivalente.
+
+La demostracion formal de dicha afirmacion se encuentra en el README.md del paquete database-auditor.
+
+
+VerificationNonAdditiveConcatenation : El Algoritmo utilizado para la Verificación  de la propiedad de concatenación no aditiva sera el propuesto por RAMEZ ELMASRI  y SHAMKANT B. NAVATHE
+
+
+Para el esquema de relacion
+helados(helado_nombre, helado_descripcion)
+Se tienen las siguientes dependencias funcionales
+F={
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+Para el esquema de relacion
+empleados(empleado_id, empleado_nombreE)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{empleado_id}=>{empleado_nombreE}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+Para el esquema de relacion
+asignaciones(asignacione_id, empleado_id, asignacione_numProyecto, asignacione_horas, asignacione_nombreProyecto, asignacione_ubicacionProyecto)
+Se tienen las siguientes dependencias funcionales
+F={
+
+{asignacione_id}=>{empleado_id,asignacione_numProyecto,asignacione_horas,asignacione_nombreProyecto,asignacione_ubicacionProyecto}
+
+}
+Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
+
+
+R={asignacione_id,empleado_id,asignacione_numProyecto,asignacione_horas,asignacione_nombreProyecto,asignacione_ubicacionProyecto,empleado_nombreE}
+D={
+
+asignaciones={asignacione_id,empleado_id,asignacione_numProyecto,asignacione_horas,asignacione_nombreProyecto,asignacione_ubicacionProyecto}
+
+empleados={empleado_id,empleado_nombreE}
+
+}
+Se tienen las siguientes dependencias funcionales
+F={
+
+{empleado_id}=>{empleado_nombreE}
+
+{asignacione_id}=>{empleado_id,asignacione_numProyecto,asignacione_horas,asignacione_nombreProyecto,asignacione_ubicacionProyecto}
+
+}
+
+Cree una matriz inicial S con una fila i por cada relación Ri en D, y una columna j por cada atributo Aj en R.
+
+Asigne S(i, j):= bij en todas las entradas de la matriz. (∗ cada bij es un símbolo distinto asociado a índices (i, j) ∗)
+
+|b_0_0|b_0_1|b_0_2|b_0_3|b_0_4|b_0_5|b_0_6|
+|b_1_0|b_1_1|b_1_2|b_1_3|b_1_4|b_1_5|b_1_6|
+
+Por cada fila i que representa un esquema de relación Ri 
+    {por cada columna j que representa un atributo Aj
+        {si la (relación Ri incluye un atributo Aj) entonces asignar S(i, j):⫽ aj;};};
+            (∗ cada aj es un símbolo distinto asociado a un índice (j) ∗)
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |b_0_6|
+|b_1_0| a_1 |b_1_2|b_1_3|b_1_4|b_1_5| a_6 |
+
+Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere cambios en S{por cada dependencia funcional X → Y en F{ para todas las filas de S que tengan los mismos símbolos en las columnas correspondientes a  los atributos de X{ hacer que los símbolos de cada columna que se corresponden con un atributo de  Y sean los mismos en todas esas filas siguiendo este patrón: si cualquiera  de las filas tiene un símbolo a para la columna, hacer que el resto de filas  tengan el mismo símbolo a en la columna. Si no existe un símbolo a para el  atributo en ninguna de las filas, elegir uno de los símbolos b para el atributo  que aparezcan en una de las filas y ajustar el resto de filas a ese valor } } }
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |b_0_6|
+|b_1_0| a_1 |b_1_2|b_1_3|b_1_4|b_1_5| a_6 |
+
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3|b_1_4|b_1_5| a_6 |
+
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3|b_1_4|b_1_5| a_6 |
+
+
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3|b_1_4|b_1_5| a_6 |
+
+La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
+
+
