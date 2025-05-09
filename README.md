@@ -92,7 +92,6 @@ De manera que es necesario contar con metodos para garantizar el mejor diseño p
 - Deteccion de errores en el diseño de la base de datos que afecten el funcionamiento de los algoritmos
 - Valida que los nombres de tablas y atributos ingresados como entrada sean validos
 - Soporte a nombres a atributos, tablas, fk y pk no convencionales
-- Soporte a relaciones recursivas
 - Mejorar las funciones de conversion entre plural a singular en SchemaFromDatabaseUsingName
 
 ## Uso
@@ -236,10 +235,10 @@ Help:
 ```
 Elemento Revisado : Resultado Algoritmo aplicados
 ------------------------------------------------
-empleados : BCNF
-proyectos : BCNF
-asignaciones : BCNF
-asignaciones,empleados,proyectos : NAC
+persons : BCNF
+person_person : BCNF
+scores : BCNF
+person_person,person_supervisaddos,person_supervisors,scores : NAC
 
 Significado de los resultados:
 
@@ -262,56 +261,62 @@ VerificationNonAdditiveConcatenation : El Algoritmo utilizado para la Verificaci
 
 
 Para el esquema de relacion
-empleados(dni, nombreE)
+persons(person_id, person_name)
 Se tienen las siguientes dependencias funcionales
 F={
 
-{dni}=>{nombreE}
+{person_id}=>{person_name}
 
 }
 Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
 
 Para el esquema de relacion
-proyectos(numProyecto, nombreProyecto, ubicacionProyecto)
+person_person(person_person_id, person_supervisor_id, person_supervisaddo_id, score_id)
 Se tienen las siguientes dependencias funcionales
 F={
 
-{numProyecto}=>{nombreProyecto,ubicacionProyecto}
+{person_person_id}=>{person_supervisor_id,person_supervisaddo_id,score_id}
 
 }
 Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
 
 Para el esquema de relacion
-asignaciones(dni, numProyecto, horas)
+scores(score_id, score_name)
 Se tienen las siguientes dependencias funcionales
 F={
 
-{dni,numProyecto}=>{horas}
+{score_id}=>{score_name}
 
 }
 Dado que para toda dependencia funcional no trivial en el conjunto de dependencias funcionales F el antecedente es super clave la tabla cumple con la definicion de BCNF
 
 
-R={dni,nombreE,numProyecto,nombreProyecto,ubicacionProyecto,horas}
+R={person_person_id,person_supervisor_id,person_supervisaddo_id,score_id,person_supervisor_name,person_supervisaddo_name,score_name}
 D={
 
-empleados={dni,nombreE}
+person_person={person_person_id,person_supervisor_id,person_supervisaddo_id,score_id}
 
-proyectos={numProyecto,nombreProyecto,ubicacionProyecto}
+person_supervisors={person_supervisor_id,person_supervisor_name}
 
-asignaciones={dni,numProyecto,horas}
+person_supervisaddos={person_supervisaddo_id,person_supervisaddo_name}
+
+scores={score_id,score_name}
 
 }
 Se tienen las siguientes dependencias funcionales
 F={
 
-{dni}=>{nombreE}
+{score_id}=>{score_name}
 
-{numProyecto}=>{nombreProyecto,ubicacionProyecto}
+{person_id}=>{person_name}
 
-{dni,numProyecto}=>{horas}
+{person_person_id}=>{person_supervisor_id,person_supervisaddo_id,score_id}
+
+{person_supervisaddo_id}=>{person_supervisaddo_name}
+
+{person_supervisor_id}=>{person_supervisor_name}
 
 }
 
@@ -319,39 +324,45 @@ Cree una matriz inicial S con una fila i por cada relación Ri en D, y una colum
 
 Asigne S(i, j):= bij en todas las entradas de la matriz. (∗ cada bij es un símbolo distinto asociado a índices (i, j) ∗)
 
-|b_0_0|b_0_1|b_0_2|b_0_3|b_0_4|b_0_5|
-|b_1_0|b_1_1|b_1_2|b_1_3|b_1_4|b_1_5|
-|b_2_0|b_2_1|b_2_2|b_2_3|b_2_4|b_2_5|
+|b_0_0|b_0_1|b_0_2|b_0_3|b_0_4|b_0_5|b_0_6|
+|b_1_0|b_1_1|b_1_2|b_1_3|b_1_4|b_1_5|b_1_6|
+|b_2_0|b_2_1|b_2_2|b_2_3|b_2_4|b_2_5|b_2_6|
+|b_3_0|b_3_1|b_3_2|b_3_3|b_3_4|b_3_5|b_3_6|
 
 Por cada fila i que representa un esquema de relación Ri 
     {por cada columna j que representa un atributo Aj
         {si la (relación Ri incluye un atributo Aj) entonces asignar S(i, j):⫽ aj;};};
             (∗ cada aj es un símbolo distinto asociado a un índice (j) ∗)
 
-| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
-|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
-| a_0 |b_2_1| a_2 |b_2_3|b_2_4| a_5 |
+| a_0 | a_1 | a_2 | a_3 |b_0_4|b_0_5|b_0_6|
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
 Repetir el siguiente bucle hasta que una ejecución completa del mismo no genere cambios en S{por cada dependencia funcional X → Y en F{ para todas las filas de S que tengan los mismos símbolos en las columnas correspondientes a  los atributos de X{ hacer que los símbolos de cada columna que se corresponden con un atributo de  Y sean los mismos en todas esas filas siguiendo este patrón: si cualquiera  de las filas tiene un símbolo a para la columna, hacer que el resto de filas  tengan el mismo símbolo a en la columna. Si no existe un símbolo a para el  atributo en ninguna de las filas, elegir uno de los símbolos b para el atributo  que aparezcan en una de las filas y ajustar el resto de filas a ese valor } } }
 
-| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
-|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
-| a_0 |b_2_1| a_2 |b_2_3|b_2_4| a_5 |
+| a_0 | a_1 | a_2 | a_3 |b_0_4|b_0_5|b_0_6|
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
 
-| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
-|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
-| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
 
-| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
-|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
-| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
 
-| a_0 | a_1 |b_0_2|b_0_3|b_0_4|b_0_5|
-|b_1_0|b_1_1| a_2 | a_3 | a_4 |b_1_5|
-| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 |
+| a_0 | a_1 | a_2 | a_3 | a_4 | a_5 | a_6 |
+|b_1_0| a_1 |b_1_2|b_1_3| a_4 |b_1_5|b_1_6|
+|b_2_0|b_2_1| a_2 |b_2_3|b_2_4| a_5 |b_2_6|
+|b_3_0|b_3_1|b_3_2| a_3 |b_3_4|b_3_5| a_6 |
 
 La descomposición D={R1, R2, . . . , Rm} de R Si tiene la propiedad de concatenación sin pérdida (no aditiva) respecto al conjunto de dependencias F en R dado que una fila  está compuesta enteramente por símbolos a
 ```
@@ -706,7 +717,20 @@ stateDiagram-v2
 
 ## Validacion y Verificacion
 
+Para validar y verificar el programa se utilizaran tecnicas de verificacion matematica formal y pruebas unitarias.
+
+Las pruebas se encuentran en la carpeta tests
+
+y pueden inspeccionarse por medio del comando  ./vendor/bin/phpunit o  ./vendor/bin/phpunit --coverage-html tests/coverage si se quieren los informes de covertuta de codigo en formato html
+
 ### Formal validation / Validacion Formal
+
+## MultipleReferencedEntitiesCollision
+
+1. Si e pertenece a Entidades y existe un fk pertenece foreignKeysDeEntidad(e)  
+tal que entidadReferenciadaPorFK(fk)==e
+
+2. Si n pertenece a EntidadesNary, existen fk1 y fk2 que pertenecen a  foreignKeysDeEntidad(e) tal que entidadReferenciadaPorFK(fk1)==entidadReferenciadaPorFK(fk2)
 
 #### getFunctionalDependenciesForBCNFInTable
 

@@ -264,6 +264,121 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
     public static function generateJoinsClustersDataProvider(): array
     {
         return [
+            'recursive without role' => [
+                [
+                    'persons'=>[
+                        'id',
+                        'person_id', 
+                        'name',                    
+                    ], 
+                ],
+                [
+                    'persons'=>[
+                 
+                        'person_id'
+
+                    ], 
+                ],
+                [
+                    [
+                    'persons',
+                    'person_referenceds',
+                    ]
+                ]
+            ],
+            'recursive' => [
+                [
+                    'persons'=>[
+                        'id',
+                        'person_couple_id', 
+                        'name',                    
+                    ], 
+                ],
+                [
+                    'persons'=>[
+                 
+                        'person_couple_id'
+
+                    ], 
+                ],
+                [
+                    [
+                    'persons',
+                    'person_couples',
+                    ]
+                ]
+            ],
+            'rnary with mixed' => [
+                [
+                    'persons'=>[
+                        'id',
+                        'name',                    
+                    ], 
+                    'person_person'=>[
+                        'id',
+                        'person_supervisaddo_id',
+                        'person_supervisor_id',
+                        'score_id',
+                       
+                    ],
+                    'scores'=>[
+                        'id',
+                       'name'
+                       
+                    ]
+                ],
+                [
+                    'persons'=>[
+                 
+                    ], 
+                    'scores'=>[
+                 
+                    ], 
+                    'person_person'=>[
+                        'person_supervisaddo_id',
+                        'person_supervisor_id',
+                        'score_id',
+                    ]
+                ],
+                [
+                    [
+                    'person_person',
+                    'person_supervisors',
+                    'person_supervisaddos',
+                    'scores'
+                    ]
+                ]
+            ],
+            'rnary' => [
+                [
+                    'taxonomies'=>[
+                        'id',
+                        'name',                    
+                    ], 
+                    'taxonomy_taxonomy'=>[
+                        'id',
+                        'taxonomy_parent_id',
+                        'taxonomy_child_id',
+                       
+                    ]
+                ],
+                [
+                    'taxonomies'=>[
+                 
+                    ], 
+                    'taxonomy_taxonomy'=>[
+                        'taxonomy_parent_id',
+                        'taxonomy_child_id',
+                    ]
+                ],
+                [
+                    [
+                    'taxonomy_taxonomy',
+                    'taxonomy_parents',
+                    'taxonomy_childs',
+                    ]
+                ]
+            ],
             'not many to many no recursion' => [
                 [
                     'empleados'=>[
@@ -466,58 +581,87 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
         return [
             'simple foreign key' => [
                 'empleado_id',
+                ['empleados'],
+                false,
                 'empleados',
             ],
             'many-to-many foreign key part 1' => [
-                'producto_categoria_id', 
-                'producto_categoria', 
+                'producto_categoria_id',
+                ['producto_categoria'],
+                false,
+                 'producto_categoria', 
             ],
             'foreign key already plural (should not pluralize again)' => [
-                'roles_id', // Aunque la convención es singular_id
+                'roles_id', 
+                ['roles'],
+                false,
                 'roles',
             ],
             'foreign key with mixed case table name' => [
                 'userRole_id',
+                ['userRoles'],
+                false,
                 'userRoles',
             ],
             'foreign key with ñ' => [
                 'araña_id',
+                ['arañas'],
+                false,
                 'arañas',
+            ],
+            'foreign key with ñ' => [
+                'araña_id',
+                ['arañas'],
+                false,
+                'arañas',
+            ],
+            'foreign key with leading underscore (unlikely but testing robustness)' => [
+                '_tabla_id',
+                ['tablas'],
+                false,
+                null,
+            ],
+            'foreign key with trailing characters after _id (should only remove _id)' => [
+                'item_id_extra',
+                ['items'],
+                false,
+                null,
+            ],
+            'foreign key to inexisting table' => [
+                'user_id',
+                ['items', 'projects'],
+                false,
+                null,
+            ],
+            'foreign key with role to inexisting table' => [
+                'user_sup_id',
+                ['items', 'projects'],
+                true,
+                null,
+            ],
+            'foreign key with role ' => [
+                'user_sup_id',
+                ['items', 'user'],
+                true,
+                'user_sups',
             ],
         ];
     }
 
     #[DataProvider('getReferencedTableFromFkProvider')]
-    public function testGetReferencedTableFromFk(string $foreignKey, string $expectedReferencedTable): void
+    public function testGetReferencedTableFromFk(
+        string $foreignKey,
+        array $tables, 
+        $withRole,
+        ?string $expectedReferencedTable
+        ): void
     {
         $this->assertEquals(
             $expectedReferencedTable, 
-            SchemaFromDatabaseUsingName::getReferencedTableFromFk($foreignKey)
+            SchemaFromDatabaseUsingName::getReferencedTableFromFk($foreignKey,$tables,$withRole)
         );
     }
 
-
-    public static function getReferencedTableFromFkWithExceptionProvider(): array
-    {
-        return [
-            'foreign key with leading underscore (unlikely but testing robustness)' => [
-                '_tabla_id',
-                '_tablas',
-            ],
-            'foreign key with trailing characters after _id (should only remove _id)' => [
-                'item_id_extra',
-                'items_extra',
-            ],
-        ];
-    }
-
-    #[DataProvider('getReferencedTableFromFkWithExceptionProvider')]
-    public function testGetReferencedTableFromFkWithException(string $foreignKey, string $expectedReferencedTable): void
-    {
-
-        $this->expectException(\Exception::class);
-        SchemaFromDatabaseUsingName::getReferencedTableFromFk($foreignKey);
-    }
 
     public static function getColumnsByTableProvider():array{
 
@@ -825,57 +969,57 @@ class SchemaFromDatabaseUsingNameTest extends TestCase
         $this->assertEquals($expectedPlural, SchemaFromDatabaseUsingName::singularToPlural($singular));
     }
 
-    public static function hasRepeatedElementsProvider(): array
+    public static function getRepeatedElementsProvider(): array
     {
         return [
             'empty array' => [
                 [],
-                false,
+                [],
             ],
             'array with unique integers' => [
                 [1, 2, 3, 4, 5],
-                false,
+                [],
             ],
             'array with repeated integers' => [
                 [1, 2, 3, 2, 5],
-                true,
+                [2],
             ],
             'array with unique strings' => [
                 ['a', 'b', 'c', 'd'],
-                false,
+                [],
             ],
             'array with repeated strings' => [
                 ['a', 'b', 'c', 'a', 'd'],
-                true,
+                ['a'],
             ],
             'array with mixed unique types' => [
                 [1, 'a', true, 3.14],
-                false,
+                [],
             ],
             'array with mixed repeated types' => [
                 [1, 'a', true, 1],
-                true,
+                [1],
             ],
             'array with case-sensitive string repetition' => [
                 ['apple', 'Apple'],
-                false,
+                [],
             ],
             'array with null and repetition' => [
                 [null, 1, null],
-                true,
+                [null],
             ],
             'array eqivalent types repetition' => [
                 [false, 0],
-                false,
+                [],
             ],
         ];
     }
 
     
-    #[DataProvider('hasRepeatedElementsProvider')]
-    public function testHasRepeatedElements(array $array, bool $expected): void
+    #[DataProvider('getRepeatedElementsProvider')]
+    public function testGetRepeatedElements(array $array, array $expected): void
     {
-        $this->assertSame($expected, SchemaFromDatabaseUsingName::hasRepeatedElements($array));
+        $this->assertEqualsCanonicalizing($expected, SchemaFromDatabaseUsingName::getRepeatedElements($array));
     }
 
 

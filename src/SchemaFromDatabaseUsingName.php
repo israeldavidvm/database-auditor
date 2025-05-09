@@ -1,6 +1,8 @@
 <?php
 
 namespace Israeldavidvm\DatabaseAuditor;
+
+use Dom\Element;
 use Exception;
 use Dotenv\Dotenv;
 
@@ -180,19 +182,27 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         
                 $schema->primaryKeysByTable[$table]=$this->getPKByTable($table,true);
                 
+
                 // echo "  Claves primarias:\n";
+                // echo 'Genesis'.json_encode($schema->primaryKeysByTable[$table]);
+
                 foreach ($schema->primaryKeysByTable[$table] as $primaryKey) {
                     // echo "  - $primaryKey\n";
                     // echo "  - {$primaryKey['column_name']}\n";
-                    // $this->decompositionsByTable[count($this->decompositions)-1];
+                    // // $this->decompositionsByTable[count($this->decompositions)-1];
                 }
 
                 $schema->foreignKeysByTable[$table]=$this->getFKsByTable($table);
+
+                
                 // echo "  Claves foráneas:\n";
+                // echo 'Genesis'.json_encode($schema->primaryKeysByTable[$table]);
+
                 foreach ($schema->foreignKeysByTable[$table] as $foreignKey) {
+
                     // echo "  - $foreignKey\n";
-                    //var_dump($foreignKey);
-                    //echo "  - {$foreignKey['column_name']} -> {$foreignKey['foreign_table_name']}.{$foreignKey['foreign_column_name']}\n";
+                    // echo "  - {$foreignKey['column_name']} -> {$foreignKey['foreign_table_name']}.{$foreignKey['foreign_column_name']}\n";
+                
                 }
         
                 $usualFunctionalDependenciesByTable=$this->getUsualFunctionalDependenciesByTable($table);
@@ -208,9 +218,9 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
             // echo "Esquema de la base de datos:\n";
                 // echo json_encode($this->generateJoinsClusters())."\n";
                
-                $this->databaseAuditor->joinsClusters = 
-                    $this->databaseAuditor->baseSchema
-                    ->generateJoinsSchemas($this->generateJoinsClusters());
+            $this->databaseAuditor->joinsClusters = 
+                $this->databaseAuditor->baseSchema
+                ->generateJoinsSchemas($this->generateJoinsClusters());
 
         } catch (\PDOException $e) {
             echo "Error de conexión: " . $e->getMessage();
@@ -293,18 +303,48 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
             FROM 
                 information_schema.columns cl
             WHERE 
-                cl.column_name ~ '^[a-zA-Z0-9ñ]+_?[a-zA-Z0-9ñ]*_id$'
-                AND
                 cl.table_name = :table
                 ");
         $query->execute(['table' => $tableName]);
 
         $foreignKeys = $query->fetchAll(\PDO::FETCH_ASSOC);
+
         $foreignKeys=array_map(function($foreignKey){
             return $foreignKey['column_name'];
         }, $foreignKeys);
 
+        $foreignKeys=array_filter($foreignKeys,function($foreignKey){
+            return self::isFk(
+                $foreignKey,
+                $this->getTables()
+            );
+        });
+
         return $foreignKeys;
+    }
+
+    public static function isFk($expresion,$tables){
+
+        return self::getReferencedTableFromFk($expresion,$tables)==null?false:true;
+
+    }
+
+    public static function splitByLastUnderscore(string $word): array
+    {
+        $lastPosition = strrpos($word, "_");
+        if ($lastPosition === false) {
+            throw new Exception("Underscore character not found in the string.");
+        }
+        return [substr($word, 0, $lastPosition), substr($word, $lastPosition + 1)];
+    }
+
+    public static function splitByFirstUnderscore(string $word): array
+    {
+        $firstPosition = strpos($word, "_");
+        if ($firstPosition === false) {
+            throw new Exception("Underscore character not found in the string.");
+        }
+        return [substr($word, 0, $firstPosition), substr($word, $firstPosition + 1)];
     }
 
     public function getPKByTable($tableName,$fullyQualifiedForm=false){
@@ -362,62 +402,92 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
 
         foreach ($tables as $table) {
 
-            $tablesManyToMany=self::getTablesManyToManyRelationship($table);
+            $fks=$this->getFKsByTable($table);
 
-            if($tablesManyToMany){
+            $referencedTables=$this->getReferencedTablesByTable($table);
+
+            // echo 'ISRAEL'.
+            // json_encode($referencedTables).
+            // 'fIN ISRAEL';
+
+            if(count($fks)>0){
 
                 $joinsClusters[]=[];
 
-
-                if(self::hasRepeatedElements($tablesManyToMany)){
-                    throw new Exception("No estan soportadas las relaciones recursivas");
-                }
-
                 $joinsClusters[count($joinsClusters)-1][]=$table;
 
-                foreach($tablesManyToMany as $tableManyToMany){
-                    $joinsClusters[count($joinsClusters)-1][]=$tableManyToMany;
-                }
-
-            }
-
-            $fks=$this->getFKsByTable($table);
-
-            // echo "FKs de la tabla $table: ".json_encode($fks)."\n";
-
-            //evita que se haga el analisis para las fk que ya se evaluaron en la relacion 
-            //many to many
-            $fksManyToMany=array_map(fn ($table)=>self::pluralToSingular($table)."_id", $tablesManyToMany);
-            $fks=array_filter($fks, fn ($fk) => !in_array($fk,$fksManyToMany));
-
-            if($fks!=null){
-
-                if(!$tablesManyToMany){
-                    $joinsClusters[]=[];
-                }
-
-                //Evita agregar la tabla si ya fue agregada al conjunto
-                //por ser una relacion many to many
-                if(!in_array($table,$joinsClusters[count($joinsClusters)-1])){
-                    $joinsClusters[count($joinsClusters)-1][]=$table;
-                }
-
                 foreach($fks as $fk){
+                    if(self::fkGenerateCollision(
+                        $fk,
+                        $table,
+                        $referencedTables,
+                        $tables
+                    )){
 
-                    $referencedTable=self::getReferencedTableFromFk($fk);
+                        $joinsClusters[count($joinsClusters)-1][]=
+                            self::getReferencedTableFromFk($fk,$tables,true);
 
-                    if(self::hasRepeatedElements([$referencedTable,$table])){
-                        throw new Exception("No estan soportadas las relaciones recursivas");
+                    }else {
+                        $joinsClusters[count($joinsClusters)-1][]=
+                            self::getReferencedTableFromFk($fk,$tables);
                     }
 
-                    $joinsClusters[count($joinsClusters)-1][]=$referencedTable;
                 }
+
+              
             }
+
+            // echo 'DAVID'.
+            // json_encode($joinsClusters[count($joinsClusters)-1]).
+            // 'fIN DAVID';
+
             
         }
     
     return $joinsClusters;
 
+    }
+
+    public static function fkGenerateCollision(
+        $fk,
+        $table,
+        $referencedTables,
+        $tables
+    ){
+
+        $referencedTable=self::getReferencedTableFromFk($fk,$tables);
+
+        return self::referencedGenerateCollision(
+            $referencedTable,
+            $table,
+            $referencedTables,
+        );
+    }
+
+    public static function referencedGenerateCollision(
+        $referencedTable,
+        $table,
+        $referencedTables,
+    ){
+
+        #1. Si e pertenece a Entidades y existe un fk pertenece
+        # foreignKeysDeEntidad(e)  
+        #tal que entidadReferenciadaPorFK(fk)==e        
+        if($referencedTable==$table){
+            return true;
+        }
+        #2. Si n pertenece a EntidadesNary, existen fk1 y fk2 que pertenecen a
+        # foreignKeysDeEntidad(e) tal que 
+        #entidadReferenciadaPorFK(fk1)==entidadReferenciadaPorFK(fk2)
+        if(
+            in_array($referencedTable,
+            self::getRepeatedElements($referencedTables)
+            )
+        ){
+            return true;
+        }
+
+        return false;
     }
 
     public static function listTableNamesToMetaInfoClusterTables($listTableNames){
@@ -427,19 +497,97 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         ];
     }
 
-    public static function getReferencedTableFromFk($foreignKey){
+    public function getReferencedTablesByTable($table){
 
-        if (!preg_match('/^[a-zA-Z0-9ñ]+_?[a-zA-Z0-9ñ]*_id$/', $foreignKey)) {
-            throw new \InvalidArgumentException("La clave foránea '$foreignKey' no sigue el formato esperado.");
-        }
+        $referencedTables=[];
 
-        $referencedTable=preg_replace('/_id$/', '', $foreignKey);
+        $fks=$this->getFKsByTable($table);
+
+        foreach($fks as $fk){
+
+            $referencedTable=self::getReferencedTableFromFk(
+                $fk,
+                $this->getTables()
+            );
+
+            if($referencedTable){
+
+                $referencedTables[]=$referencedTable;
+
+            }
         
-        if(!self::isTablesManyToManyRelationship($referencedTable)){
-            $referencedTable=self::singularToPlural($referencedTable);
+        }
+        
+        return $referencedTables;            
+        
+    }
+
+    public static function getReferencedTableFromFk($expresion,$tables,$withRole=false){
+
+        $role=null;
+
+        $pattern = '/^[a-zA-Z0-9ñ]+(?:_[a-zA-Z0-9ñ]+)*_id$/';
+        if(!(bool) preg_match($pattern, $expresion)){
+            return null;
         }
 
-        return $referencedTable;
+        $foundFk=false;
+
+        while(!$foundFk){
+
+            try {
+
+                if(self::splitByLastUnderscore($expresion)[1]!=='id'){
+                    $role=self::splitByLastUnderscore($expresion)[1];
+                }
+
+                $expresion=self::splitByLastUnderscore($expresion)[0];
+
+                if(in_array(
+                    self::singularToPlural($expresion),
+                    $tables
+                )){
+
+                    #expresion apunta auna relacion
+                    $foundFk=true;
+                    $expresion=self::singularToPlural($expresion);
+
+                } else if(in_array(
+
+                    #expresion apunta a una relacion naria
+                    $expresion,
+                    $tables
+
+                )){
+                    $foundFk=true;
+
+                }
+            
+            } catch (Exception $e) {
+                break;
+            }
+
+        }
+
+        if($withRole===true){
+
+            if($role===null){
+                $role='referenced';
+            }
+
+            $expresion=self::pluralToSingular($expresion);
+
+            $expresion.="_$role";
+
+            $expresion=self::singularToPlural($expresion);
+        }
+
+        if($foundFk){
+            return $expresion;
+        }else{
+            return null;
+        }
+        
     }
 
     public static function getTablesManyToManyRelationship($tableName) {
@@ -500,18 +648,34 @@ class SchemaFromDatabaseUsingName extends DatabaseSchemaGenerator
         }
     }
 
-    public static function hasRepeatedElements(array $array): bool
+    public static  function getRepeatedElements(array $array): array
     {
-        $seenElements = [];
-    
+        $repeatedEle=[];
+
         foreach ($array as $element) {
-            if (in_array($element, $seenElements,true)) {
-                return true;
-            } else {
-                $seenElements[]=$element;            
+            if(!in_array($element,$repeatedEle) && self::countElementRepetitions($element,$array)>1){
+
+                $repeatedEle[]=$element;
+
             }
         }
-        return false;
+
+        return $repeatedEle;
+    }
+
+    public static function countElementRepetitions($element,array $array): int
+    {
+       
+        $counter=0;
+       
+        foreach ($array as $i) {
+            if($i===$element){
+                $counter++;
+            }
+        }   
+       
+        return $counter;
+       
     }
 }
 

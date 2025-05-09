@@ -14,6 +14,21 @@ class MenuCommand extends Command
 
     protected $databaseAuditor;
 
+    public static function generateCover(){
+        return ''.
+        '    / __ \  ____ _  / /_  ____ _          /   |  __  __  ____/ /   (_)  / /_  ____    _____ '.PHP_EOL.
+        '   / / / / / __ `/ / __/ / __ `/ ______  / /| | / / / / / __  /   / /  / __/ / __ \  / ___/ '.PHP_EOL.
+        '  / /_/ / / /_/ / / /_  / /_/ / /_____/ / ___ |/ /_/ / / /_/ /   / /  / /_  / /_/ / / /     '.PHP_EOL.
+        ' /_____/  \__,_/  \__/  \__,_/         /_/  |_|\__,_/  \__,_/   /_/   \__/  \____/ /_/      '.PHP_EOL.PHP_EOL.PHP_EOL.
+        '                         Creado por israeldavidvm'.PHP_EOL.PHP_EOL.        
+        '¡Optimiza tu diseño de bases de datos con data-auditor!'.PHP_EOL.PHP_EOL.
+        '¿Quieres asegurarte de que tu base de datos esté libre de redundancias, anomalías'.
+        ' y problemas de diseño? Con data-auditor, obtén las herramientas necesarias para validar'.
+        ' formas normales, analizar dependencias funcionales y garantizar un diseño robusto y eficiente.'.
+        PHP_EOL.PHP_EOL. 
+        ' ¡Prueba nuestra interfaz de línea de comandos y lleva tu base de datos al siguiente nivel!';  
+    }
+
     protected function configure()
     {
         // Define el nombre del comando
@@ -31,8 +46,8 @@ class MenuCommand extends Command
         /** @var QuestionHelper $helper */
         $helper = $this->getHelper('question');
 
-        $question = new ChoiceQuestion(
-            'Por favor, selecciona una opción:',
+        $question = new ChoiceQuestion(self::generateCover().
+        'Por favor, selecciona una opción:',
             [
                 'Probar Bases de datos personalizada',
                 'Probar bases de datos de ejemplo',
@@ -158,6 +173,7 @@ class MenuCommand extends Command
                 'Base de datos que no esta en BCNF',
                 'Base de datos que posee la propiedad de concatenación sin pérdida (no aditiva)',
                 'Base de datos que no posee la propiedad de concatenación sin pérdida (no aditiva)',
+                'Base de datos con entidades repetidas',
                 'Salir',
             ],
             0 // Opción por defecto (el índice del array)
@@ -183,6 +199,9 @@ class MenuCommand extends Command
                 break;
             case 'Base de datos que no posee la propiedad de concatenación sin pérdida (no aditiva)':
                 $path = './AditiveExampleDB.json';
+                break;
+            case 'Base de datos con entidades repetidas':
+                $path='./RepeatedReferencedExampleDB.json';
                 break;
             case 'Salir':
                 $output->writeln('Saliendo del menú.');

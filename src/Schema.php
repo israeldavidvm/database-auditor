@@ -79,20 +79,68 @@ class Schema {
             $joinsSchema=new Schema();
 
             foreach ($joinsCluster as $tableName) {
+
+                if(isset($this->decompositionsByTable[$tableName])){
+
+                    $joinsSchema->universalRelationship=Schema::union(
+                        $joinsSchema->universalRelationship,
+                        $this->decompositionsByTable[$tableName]
+                    );
+        
+                    $joinsSchema->decompositionsByTable[$tableName]=$this->decompositionsByTable[$tableName];
+                    // $joinsSchema->primaryKeysByTable[$tableName]=$this->primaryKeysByTable[$tableName];
+                    // $joinsSchema->foreignKeysByTable[$tableName]=$this->foreignKeysByTable[$tableName];
+        
+                    $joinsSchema->functionalDependencies=
+                        Schema::union(
+                            $this->functionalDependencies,
+                            $joinsSchema->functionalDependencies
+                        );
+
+                }else{
+
+                    $tableBase=self::getTableBase($tableName);
+
+                    $joinsSchema->decompositionsByTable[$tableName]=
+                        array_map(function ($attribute) use($tableBase,$tableName) {
+                            return self::changeAttributeTable(
+                                $attribute,
+                                $tableBase,
+                                $tableName
+
+                            );
+                        }, $this->decompositionsByTable[$tableBase]);
+
+                    $joinsSchema->universalRelationship=Schema::union(
+                        $joinsSchema->universalRelationship,
+                        $joinsSchema->decompositionsByTable[$tableName]
+                    );
+        
+                    
+                    // $joinsSchema->primaryKeysByTable[$tableName]=$this->primaryKeysByTable[$tableName];
+                    // $joinsSchema->foreignKeysByTable[$tableName]=$this->foreignKeysByTable[$tableName];
+        
+                    $joinsSchema->functionalDependencies=Schema::union(
+                        array_map(function ($functionalDependency) 
+                        use($tableBase,$tableName) {
+                            return self::changeFunctionalDependency(
+                                $functionalDependency,
+                                $tableBase,
+                                $tableName
+
+                            );
+                        }, 
+                        $this->functionalDependencies),
+                        $joinsSchema->functionalDependencies);
+
+                }
           
-                $joinsSchema->universalRelationship=Schema::union(
-                    $joinsSchema->universalRelationship,
-                    $this->decompositionsByTable[$tableName]
-                );
-    
-                $joinsSchema->decompositionsByTable[$tableName]=$this->decompositionsByTable[$tableName];
-                // $joinsSchema->primaryKeysByTable[$tableName]=$this->primaryKeysByTable[$tableName];
-                // $joinsSchema->foreignKeysByTable[$tableName]=$this->foreignKeysByTable[$tableName];
-    
             }
     
-            $joinsSchema->functionalDependencies=
-                $this->functionalDependencies;
+            $joinsSchema->functionalDependencies=Schema::union(
+                $joinsSchema->functionalDependencies,
+                $this->functionalDependencies
+            );
 
             $joinsSchemas[]=$joinsSchema;
         }
@@ -100,6 +148,87 @@ class Schema {
         return $joinsSchemas;
 
     }
+
+    public static function changeFunctionalDependency(
+        $functionalDependency,
+        $oldTable,
+        $newTable
+    ){
+
+        // echo 'x='.implode(',',$functionalDependency['x']).PHP_EOL;
+        // echo 'y='.implode(',',$functionalDependency['y']).PHP_EOL;
+
+        // echo 'oldTable='.$oldTable.PHP_EOL;
+        // echo 'newTable='.$newTable.PHP_EOL;
+
+
+        $newFunctionalDependency=[
+            "x"=>[],
+            "y"=>[]
+        ];
+
+       foreach($functionalDependency['x'] as $x){
+
+            $newFunctionalDependency['x'][]=self::changeAttributeTable($x,$oldTable,$newTable);
+
+       }
+
+       foreach($functionalDependency['y'] as $y){
+
+        $newFunctionalDependency['y'][]=self::changeAttributeTable($y,$oldTable,$newTable);
+
+        }
+
+        // echo 'x='.implode(',',$newFunctionalDependency['x']).PHP_EOL;
+        // echo 'y='.implode(',',$newFunctionalDependency['y']).PHP_EOL;
+
+
+        return $newFunctionalDependency;
+
+
+    }
+
+    public static function changeAttributeTable($attribute,$oldTable,$newTable){
+
+        $pattern = '/^[a-zA-Z0-9ñ]+(?:_[a-zA-Z0-9ñ]+)+$/';
+        if(!(bool) preg_match($pattern, $attribute)){
+            return $attribute;
+        }
+
+        
+        $fkPrefix=SchemaFromDatabaseUsingName::pluralToSingular($oldTable);
+
+        $oldAttribute=SchemaFromDatabaseUsingName::splitByLastUnderscore($attribute);
+
+        $tableBase=$oldAttribute[0];
+
+        if($oldAttribute[0]==$fkPrefix){
+            $tableBase=SchemaFromDatabaseUsingName::pluralToSingular($newTable);
+        }
+
+        return $tableBase.'_'.
+            $oldAttribute[1];
+
+
+    }
+
+    public static function getTableBase($tableName){
+
+        try{
+            return SchemaFromDatabaseUsingName::singularToPlural(
+                SchemaFromDatabaseUsingName::
+                    splitByLastUnderscore($tableName)[0]
+            );
+
+        }catch(Exception $e){
+
+            return $tableName;
+
+        }
+       
+
+    }
+
 
     /**
      * Este metodo es una version simplificada de 

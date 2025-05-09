@@ -1,0 +1,67 @@
+{
+    "universalRelationship": [
+        "person_id",
+        "person_name",
+        "person_supervisor_id",
+        "person_supervisaddo_id",
+        "person_person_id",
+        "score_id",
+        "score_name"
+
+    ],
+    "decompositionsByTable":{
+       "persons" : [
+            "person_id",
+            "person_name"
+        ],
+        "person_person" : [
+            "person_person_id",
+            "person_supervisor_id",
+            "person_supervisaddo_id",
+            "score_id"
+
+        ],
+        "scores" : [
+            "score_id",
+            "score_name"
+        ]
+    },
+    "functionalDependencies": [
+        {
+            "x": [
+                "score_id"
+            ],
+            "y": [
+                "score_name"
+            ]
+        },
+        {
+            "x": [
+                "person_id"
+            ],
+            "y": [
+                "person_name"
+            ]
+        },
+        {
+            "x": [
+                "person_person_id"
+            ],
+            "y": [
+                "person_supervisor_id",
+                "person_supervisaddo_id",
+                "score_id"
+            ]
+        }
+    ],
+    "joinsClusters": [
+        
+        [
+            "person_person",
+            "person_supervisors",
+            "person_supervisaddos",
+            "scores"
+        ]           
+
+    ]
+}
