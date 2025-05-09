@@ -12,6 +12,7 @@
   - [Challenges Conquered](#challenges-conquered)
   - [Features to Implement](#features-to-implement)
   - [Usage](#usage)
+    - [Warning](#warning)
     - [Requirements](#requirements)
       - [Installation](#installation)
         - [As a user](#as-a-user)
@@ -116,6 +117,86 @@ Therefore, it is necessary to have methods to guarantee the best possible design
 - Improve plural to singular conversion functions in SchemaFromDatabaseUsingName
 
 ## Usage
+
+### Warning
+
+The module for extracting information from a database requires that the database follow the following naming conventions:
+
+1. If the relationship is n-ary, such as a person_person table, the name of each table must be singular and separated by a _, following alphabetical order.
+
+2. If the relationship is not n-ary, the table name must be plural.
+
+3. Foreign keys must follow the pattern:
+
+```
+<TablaReferenciadaEnSingular>[_<ROL>]_id
+```
+For example, if you have the table Personas(id,nombre,age), the projects table should be written as follows: Proyectos(persona_supervisor_id,nombre), i.e., the fk should be persona_supervisor_id.
+
+4. To perform singular and plural transformations, the following must be understood:
+
+Specific Rules for pluralToSingular($word) (From plural to singular):
+
+"-ies" to "-y" ending rule:
+
+Condition: If the word being parsed ends exactly with the letter sequence "ies".
+Action: All letters of the word except the last three ("ies") are taken, and the letter "y" is added to the end.
+Example: The word "countries" meets this condition. "Countr" is taken and "y" is added, resulting in "country".
+"-s" ending rule:
+
+Condition: If the word being parsed ends with the letter "s".
+Action: All letters of the word except the last ("s") are taken.
+Example: The word "books" meets this condition. "book" is taken.
+Default rule (singular):
+
+Condition: If the word being parsed meets neither Rule 1 ("-ies" ending) nor Rule 2 ("-s" ending).
+Action: The function assumes the word is already in its singular form and returns it as is, without any modification. Example: The word "table" does not end in "ies" or "s", therefore, "table" is returned.
+Specific Rules for singularToPlural($word) (Singular to Plural):
+
+Word Rule Already Plural ("-s" Ending):
+
+Condition: If the word being parsed ends with the letter "s".
+Action: The function assumes the word is already plural and returns it unchanged.
+Example: The word "virus" ends in "s", therefore, "virus" is returned.
+"-y" to "-ies" Ending Rule (with Preceding Vowel Restriction):
+
+Condition:
+The word being parsed ends with the letter "y".
+And, the letter immediately preceding the "y" is not one of the vowels: "a", "e", "i", "o", "u". That is, the "y" is preceded by a consonant.
+Action: The ending "y" is searched for and replaced with the sequence "ies".
+Example: The word "country" ends in "y," and the preceding letter is "r" (a consonant). Therefore, "y" is replaced with "ies," resulting in "countries."
+Example (where it does NOT apply): The word "king" ends in "y," but the preceding letter is "e" (a vowel). Therefore, this rule does not apply.
+Default rule (adding "-s"):
+
+Condition: If the word being analyzed does not satisfy either Rule 1 (-s ending) or Rule 2 (-y ending preceded by a consonant).
+Action: The letter "s" is added to the end of the word.
+Example: The word "book" does not end in "s" and does not end in "y" preceded by a consonant. Therefore, "s" is added, resulting in "books."
+Example: The word "table" does not end in "s" and does not end in "y" preceded by a consonant. Therefore, "s" is added, resulting in "mesas."
+Example (where the "-y" rule does NOT apply to "-ies"): The word "grey" does not end in "s" and ends in "ey" (vowel + y), so "s" is added, resulting in "greys" (following the default rule).
+
+5. Functional dependencies must be specified using the fully qualified attribute notation, which is given by
+
+```
+<SingularReferencedTable>[_<ROLE>][_<Attribute>]
+
+```
+
+For example, if you have the table People(id, name, age),
+
+fully qualified names will have the form
+
+person_id
+person_name
+person_age
+
+so a functional dependency must be specified
+
+```
+[
+"x"=>["person_id"]
+"y"=>["person_name"."person_age"]
+]
+```
 
 ### Requirements
 

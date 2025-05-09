@@ -12,6 +12,7 @@
   - [Challenges conquered / Desafíos Conquistados](#challenges-conquered--desaf%C3%ADos-conquistados)
   - [Features to implement / Caracteristicas a implementar](#features-to-implement--caracteristicas-a-implementar)
   - [Uso](#uso)
+    - [Advertencia](#advertencia)
     - [Requisitos](#requisitos)
       - [Instalacion](#instalacion)
         - [Como usuario](#como-usuario)
@@ -118,6 +119,87 @@ De manera que es necesario contar con metodos para garantizar el mejor diseño p
 
 ## Uso
 
+### Advertencia
+
+El modulo para extraer la informacion de una base de datos requiere que la base de datos siga las convenciones de nombres siguientes
+
+1. Si la relaciones n-arias, como por ejemplo una tabla person_person, se debe tomar el nombre de cada tabla en singular y separarlo por un _ y siguiendo un orden alfabetico
+
+2. Si la relacion no es n-aria, se escribe el nombre de la tabla en plural
+
+3. Las llaves foraneas deben seguir el patron 
+
+```
+<TablaReferenciadaEnSingular>[_<ROL>]_id
+```
+Por ejemplo si se tiene la tabla Personas(id,nombre,edad) se deberia escribir la tabla proyectos de la siguiente forma Proyectos(persona_supervisor_id, nombre) es decir la fk deberia ser persona_supervisor_id
+
+4. Para hacer las transformaciones de singular y plural se entendera lo siguiente
+
+Reglas Específicas de pluralToSingular($word) (De plural a singular):
+
+Regla de terminación "-ies" a "-y":
+
+Condición: Si la palabra que se analiza termina exactamente con la secuencia de letras "ies".
+Acción: Se toman todas las letras de la palabra excepto las últimas tres ("ies"), y se les añade la letra "y" al final.
+Ejemplo: La palabra "countries" cumple esta condición. Se toma "countr" y se le añade "y", resultando en "country".
+Regla de terminación "-s":
+
+Condición: Si la palabra que se analiza termina con la letra "s".
+Acción: Se toman todas las letras de la palabra excepto la última ("s").
+Ejemplo: La palabra "libros" cumple esta condición. Se toma "libro".
+Regla por defecto (singular):
+
+Condición: Si la palabra que se analiza no cumple ni la Regla 1 (terminación "-ies") ni la Regla 2 (terminación "-s").
+Acción: La función asume que la palabra ya está en su forma singular y la devuelve tal cual, sin realizar ninguna modificación.
+Ejemplo: La palabra "mesa" no termina en "ies" ni en "s", por lo tanto, se devuelve "mesa".
+Reglas Específicas de singularToPlural($word) (De singular a plural):
+
+Regla de palabra ya en plural (terminación "-s"):
+
+Condición: Si la palabra que se analiza termina con la letra "s".
+Acción: La función asume que la palabra ya está en plural y la devuelve sin modificaciones.
+Ejemplo: La palabra "virus" termina en "s", por lo tanto, se devuelve "virus".
+Regla de terminación "-y" a "-ies" (con restricción de vocal precedente):
+
+Condición:
+La palabra que se analiza termina con la letra "y".
+Y, la letra inmediatamente anterior a la "y" no es ninguna de las vocales: "a", "e", "i", "o", "u". Es decir, la "y" está precedida por una consonante.
+Acción: Se busca la secuencia final "y" y se reemplaza por la secuencia "ies".
+Ejemplo: La palabra "country" termina en "y", y la letra anterior es "r" (una consonante). Por lo tanto, se reemplaza "y" con "ies", resultando en "countries".
+Ejemplo (donde NO se aplica): La palabra "rey" termina en "y", pero la letra anterior es "e" (una vocal). Por lo tanto, esta regla no se aplica.
+Regla por defecto (añadir "-s"):
+
+Condición: Si la palabra que se analiza no cumple ni la Regla 1 (terminación "-s") ni la Regla 2 (terminación "-y" precedida de consonante).
+Acción: Se añade la letra "s" al final de la palabra.
+Ejemplo: La palabra "libro" no termina en "s" y no termina en "y" precedida de consonante. Por lo tanto, se le añade "s", resultando en "libros".
+Ejemplo: La palabra "mesa" no termina en "s" y no termina en "y" precedida de consonante. Por lo tanto, se le añade "s", resultando en "mesas".
+Ejemplo (donde NO se aplica la regla "-y" a "-ies"): La palabra "grey" no termina en "s" y termina en "ey" (vocal + y), por lo que se le añade "s", resultando en "greys" (siguiendo la regla por defecto).
+
+5. Las dependencias funcionales deben ser especificadas usando la notacion de attributos completamente cualificado la cual esta dada por 
+
+```
+<TablaReferenciadaEnSingular>[_<ROL>][_<Atributo>]
+
+```
+
+Por ejemplo si se tiene la tabla Personas(ci,nombre,edad)
+
+los nombres completamente cualificados tendran la forma 
+
+persona_ci
+persona_nombre
+persona_edad
+
+de forma que una dependencia funcional debe especificarse
+
+```
+[
+    "x"=>["persona_ci"]
+    "y"=>["persona_nombre"."persona_edad"]
+]
+```
+
 ### Requisitos 
 
 #### Instalacion 
@@ -157,6 +239,9 @@ DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE=./functionDepedencies.json
 #### Archivo functionalDependencies.json
 
 Un archivo donde se van a configurar las depedencias funcionales de tu base de datos, notese que el nombre viene de la variable de entorno DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE escrita en tu archivo .env
+
+Vease la notacion en la seccion de advertencias pero un ejemplo seria el siguiente
+
 
 ```
 {
