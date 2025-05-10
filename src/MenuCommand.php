@@ -19,19 +19,20 @@ class MenuCommand extends Command
     protected $helper;
     public static function generateCover(){
         return ''.
-        '     ____            __                    ___                __    _    __                 '.PHP_EOL.
-        '    / __ \  ____ _  / /_  ____ _          /   |  __  __  ____/ /   (_)  / /_  ____    _____ '.PHP_EOL.
-        '   / / / / / __ `/ / __/ / __ `/ ______  / /| | / / / / / __  /   / /  / __/ / __ \  / ___/ '.PHP_EOL.
-        '  / /_/ / / /_/ / / /_  / /_/ / /_____/ / ___ |/ /_/ / / /_/ /   / /  / /_  / /_/ / / /     '.PHP_EOL.
-        ' /_____/  \__,_/  \__/  \__,_/         /_/  |_|\__,_/  \__,_/   /_/   \__/  \____/ /_/      '.PHP_EOL.PHP_EOL.PHP_EOL.
-        '                                                                 Creado por israeldavidvm'.PHP_EOL.PHP_EOL.        
+        '      ____            __             __                                   ___                __    _                       '.PHP_EOL.    
+        '     / __ \  ____ _  / /_  ____ _   / /_   ____ _   _____  ___           /   |  __  __  ____/ /   (_)  / /_  ____    _____ '.PHP_EOL.                                                              
+        '    / / / / / __ `/ / __/ / __ `/  / __ \ / __ `/  / ___/ / _ \ ______  / /| | / / / / / __  /   / /  / __/ / __ \  / ___/ '.PHP_EOL.                                                              
+        '   / /_/ / / /_/ / / /_  / /_/ /  / /_/ // /_/ /  (__  ) /  __//_____/ / ___ |/ /_/ / / /_/ /   / /  / /_  / /_/ / / /     '.PHP_EOL.                                                              
+        '  /_____/  \__,_/  \__/  \__,_/  /_.___/ \__,_/  /____/  \___/        /_/  |_|\__,_/  \__,_/   /_/   \__/  \____/ /_/      '.PHP_EOL.PHP_EOL.PHP_EOL.
+        '                       Creado por israeldavidvm'.PHP_EOL.PHP_EOL.        
         '¿Quieres asegurarte de la calidad de tu base de datos?'.PHP_EOL.PHP_EOL.
-        'Con data-auditor, obtén las herramientas que te ayudaran a cumplir con'.
-        ' las mejores practicas en tema de diseño de base de datos,'.
-        ' asegura la integridad estructural, evita redundancias y anomalías,'.
-        '  validar formas normales, verificar la propiedad de concatenacion'.
-        ' no aditiva, analizar dependencias funcionales, etc.'.PHP_EOL.PHP_EOL.
-        '¡Prueba nuestra interfaz de línea de comandos y asegura la calidad de tus bases de datos!'.PHP_EOL;
+        ' database-auditor te ayudara asegurar la calidad de tu base de datos'.
+        ' de forma automática, cumplir con las mejores practicas, asegurar'.
+        ' la integridad estructural, evitar redundancias y anomalías, validar'.
+        ' formas normales, verificar la propiedad de concatenación no aditiva,'.
+        ' analiza dependencias funcionales, etc.'
+        .PHP_EOL.PHP_EOL.
+        '¡Prueba database-auditor y asegura la calidad de tus bases de datos! '.PHP_EOL;
     }
 
     protected function configure()
@@ -231,37 +232,37 @@ class MenuCommand extends Command
 
         $databaseAuditor->executeValidationAlgorithm();
 
-        $this->printResumeReport($output,$databaseAuditor);
+        $this->printResumeReport($output,$databaseAuditor->report);
 
-        $this->createFileRequired($input,$output,$databaseAuditor,$databaseAuditor->reportToString());
+        $this->createFileReportRequired($input,$output,$databaseAuditor->report);
 
     }
 
-    protected function printResumeReport($output,$databaseAuditor){
+    protected function printResumeReport($output,$report){
 
-        echo "Elementos totales(ET): ".$databaseAuditor->numScanElements().PHP_EOL;
-        echo "Elementos en buen estado(EG): ".$databaseAuditor->numGoodStateElements().PHP_EOL;
+        echo "Elementos totales(ET): ".$report->numScanElements().PHP_EOL;
+        echo "Elementos en buen estado(EG): ".$report->numGoodStateElements().PHP_EOL;
 
         echo "EG/ET ";
         $progressBar = new ProgressBar($output,
-            $databaseAuditor->numScanElements()
+            $report->numScanElements()
         );                   
 
-        $progressBar->start(null, $databaseAuditor->numGoodStateElements());
+        $progressBar->start(null, $report->numGoodStateElements());
         $output->writeln(PHP_EOL);                        
 
         $output->writeln(
-            $databaseAuditor->reportResumeToString()
+            $report->reportResumeToString()
         );     
 
     }
 
-    protected function createFileRequired($input,$output,$databaseAuditor,$content){
+    protected function createFileReportRequired($input,$output,$report){
 
-        $createdFile=$this->createFile($input,$output,$databaseAuditor->reportToString());
+        $createdFile=$this->createFile($input,$output,$report->reportToString());
 
         while(!$createdFile){
-            $createdFile=$this->createFile($input,$output,$databaseAuditor->reportToString());
+            $createdFile=$this->createFile($input,$output,$report->reportToString());
         }
 
     }

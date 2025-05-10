@@ -27,6 +27,8 @@ abstract class ValidationAlgorithm
 
     abstract public static function explainResult($result): string;
 
+    abstract static function isGoodResult($result);
+
     abstract public function execute();
 }
 

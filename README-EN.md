@@ -2,10 +2,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [data-auditor](#data-auditor)
-  - [Ensure the Quality of Your Databases with data-auditor!](#ensure-the-quality-of-your-databases-with-data-auditor)
+- [database-auditor](#database-auditor)
+  - [Ensure the Quality of Your Databases with database-auditor!](#ensure-the-quality-of-your-databases-with-database-auditor)
   - [License](#license)
-  - [Features - What does data-auditor offer?](#features---what-does-data-auditor-offer)
+  - [Features - What does database-auditor offer?](#features---what-does-database-auditor-offer)
     - [Threat Detection: Validate normal forms, identify non-additive join problems, etc.](#threat-detection-validate-normal-forms-identify-non-additive-join-problems-etc)
     - [Command-Line Interface](#command-line-interface)
   - [Justification](#justification)
@@ -66,16 +66,16 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-# data-auditor
+# database-auditor
 
 [Readme version in English](./README-EN.md)
-## Ensure the Quality of Your Databases with data-auditor!
+## Ensure the Quality of Your Databases with database-auditor!
 
 ![alt text](image.png)
 
 Do you want to ensure the quality of your database?
 
-With data-auditor, get the tools that will help you comply with best practices in database design, ensure structural integrity, avoid redundancies and anomalies, validate normal forms, verify the non-additive join property, analyze functional dependencies, etc.
+With database-auditor, get the tools that will help you comply with best practices in database design, ensure structural integrity, avoid redundancies and anomalies, validate normal forms, verify the non-additive join property, analyze functional dependencies, etc.
 
 Try our command-line interface and ensure the quality of your databases!
 
@@ -83,9 +83,9 @@ Try our command-line interface and ensure the quality of your databases!
 
 This code is licensed under the GNU Lesser General Public License version 3.0 or later (LGPLv3+). You can find a complete copy of the license at https://www.gnu.org/licenses/lgpl-3.0-standalone.html
 
-## Features - What does data-auditor offer?
+## Features - What does database-auditor offer?
 
-data-auditor is a comprehensive tool designed to guarantee the quality of your databases. It offers a set of advanced functionalities that allow you to:
+database-auditor is a comprehensive tool designed to guarantee the quality of your databases. It offers a set of advanced functionalities that allow you to:
 
 ### Threat Detection: Validate normal forms, identify non-additive join problems, etc.
 
@@ -97,7 +97,7 @@ data-auditor is a comprehensive tool designed to guarantee the quality of your d
 
 - Command-line interface that provides a simple and direct way to use the library, ideal for integration into automated workflows.
 
-With data-auditor, you can guarantee a solid, efficient, and error-free database design.
+With database-auditor, you can guarantee a solid, efficient, and error-free database design.
 
 ## Justification
 
@@ -865,7 +865,7 @@ In conclusion:
 For the case of BCNF validation, we can use the
 ## Documentation
 
-The data-auditor package allows you to perform a series of validations and improvements to the quality of a database design, such as checking for normal forms, verifying the non-additive concatenation property, etc.
+The database-auditor package allows you to perform a series of validations and improvements to the quality of a database design, such as checking for normal forms, verifying the non-additive concatenation property, etc.
 
 ### Conventions used during documentation
 

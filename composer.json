@@ -1,6 +1,6 @@
 {
     "name": "israeldavidvm/database-auditor",
-    "description": "¡Optimiza tu diseño de bases de datos con data-auditor! ¿Quieres asegurarte de que tu base de datos esté libre de redundancias, anomalías y problemas de diseño? Con data-auditor, obtén las herramientas necesarias para validar formas normales, analizar dependencias funcionales y garantizar un diseño robusto y eficiente. ¡Prueba nuestra interfaz de línea de comandos y lleva tu base de datos al siguiente nivel!",
+    "description": "¡Optimiza tu diseño de bases de datos con database-auditor! ¿Quieres asegurarte de que tu base de datos esté libre de redundancias, anomalías y problemas de diseño? Con database-auditor, obtén las herramientas necesarias para validar formas normales, analizar dependencias funcionales y garantizar un diseño robusto y eficiente. ¡Prueba nuestra interfaz de línea de comandos y lleva tu base de datos al siguiente nivel!",
     "type": "library",
     "require": {
         "php": ">=5.4",

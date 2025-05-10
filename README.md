@@ -2,10 +2,10 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
-- [data-auditor](#data-auditor)
-  - [¡Asegura la calidad de tus bases de datos con data-auditor!](#%C2%A1asegura-la-calidad-de-tus-bases-de-datos-con-data-auditor)
+- [database-auditor](#database-auditor)
+  - [¡Asegura la calidad de tus bases de datos con database-auditor!](#%C2%A1asegura-la-calidad-de-tus-bases-de-datos-con-database-auditor)
   - [Licencia](#licencia)
-  - [Caracteristicas ¿Qué ofrece data-auditor?](#caracteristicas-%C2%BFqu%C3%A9-ofrece-data-auditor)
+  - [Caracteristicas ¿Qué ofrece?](#caracteristicas-%C2%BFqu%C3%A9-ofrece)
     - [Deteccion de Amenazas : Valida formas normales, identifica problemas de concatenación no aditiva, etc.](#deteccion-de-amenazas--valida-formas-normales-identifica-problemas-de-concatenaci%C3%B3n-no-aditiva-etc)
     - [Interfaz de línea de comandos](#interfaz-de-l%C3%ADnea-de-comandos)
   - [Justificacion](#justificacion)
@@ -66,27 +66,27 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-# data-auditor
+# database-auditor
 
 [Readme version in English](./README-EN.md)
 
-## ¡Asegura la calidad de tus bases de datos con data-auditor!
+## ¡Asegura la calidad de tus bases de datos con database-auditor!
 
 ![alt text](image.png)
 
 ¿Quieres asegurarte de la calidad de tu base de datos? 
 
-Con data-auditor, obtén las herramientas que te ayudaran a cumplir con las mejores practicas en tema de diseño de base de datos, asegura la integridad estructural, evita redundancias y anomalías, valida formas normales, verifica la propiedad de concatenacion no aditiva, analiza dependencias funcionales, etc. 
+database-auditor te ayudara asegurar la calidad de tu base de datos de forma automática, cumplir con las mejores practicas, asegurar la integridad estructural, evitar redundancias y anomalías, validar formas normales, verificar la propiedad de concatenación no aditiva, analiza dependencias funcionales, etc. 
 
-¡Prueba nuestra interfaz de línea de comandos y asegura la calidad de tus bases de datos!
+¡Prueba database-auditor y asegura la calidad de tus bases de datos! 
 
 ## Licencia
 
 Este código tiene licencia bajo la licencia pública general de GNU versión 3.0 o posterior (LGPLV3+). Puede encontrar una copia completa de la licencia en https://www.gnu.org/licenses/lgpl-3.0-standalone.htmlalone.html0-standalone.html
 
-## Caracteristicas ¿Qué ofrece data-auditor?
+## Caracteristicas ¿Qué ofrece?
 
-data-auditor es una herramienta integral diseñada para garantizar la calidad de tus bases de datos. Ofrece un conjunto de funcionalidades avanzadas que te permiten:
+database-auditor es una herramienta integral diseñada para garantizar la calidad de tus bases de datos. Ofrece un conjunto de funcionalidades avanzadas que te permiten:
 
 ### Deteccion de Amenazas : Valida formas normales, identifica problemas de concatenación no aditiva, etc.
 
@@ -99,7 +99,7 @@ data-auditor es una herramienta integral diseñada para garantizar la calidad de
 
 - Interfaz de línea de comandos que proporciona una forma sencilla y directa de utilizar la librería, ideal para integración en flujos de trabajo automatizados.
 
-Con data-auditor, podrás garantizar un diseño de base de datos sólido, eficiente y libre de errores comunes.
+Con database-auditor, podrás garantizar un diseño de base de datos sólido, eficiente y libre de errores comunes.
 
 ## Justificacion
 
@@ -551,116 +551,91 @@ Basicamente el programa funciona con los siguientes pasos
 
 En el siguiente diagrama de clases se veran las abstracciones clave en el sistema, sus interaciones  responsabilidades.
 
+![alt text](image-4.png)
 
 ``` mermaid
 ---
 title: database auditor
 ---
 classDiagram
-    
-    class DatabaseAuditor{
-    
+direction LR
+    class DatabaseAuditor {
     }
 
-    note for DatabaseAuditor "Busca ser el contexto para las distintas estrategias usadas
-    y un medio que encapsula funciones utilitarias 
-    comunes para todos los algoritmos"
+    class DatabaseSchemaGenerator {
+	    +databaseAuditor
+	    +generate()
+    }
+
+    class Report {
+	    +databaseAuditor
+    }
+
+    class Schema {
+    }
+
+    class SchemaFromDBUsingName {
+	    +databaseAuditor
+	    +generate()
+    }
+
+    class SchemaFromJSON {
+	    +databaseAuditor
+	    +generate()
+    }
+
+    class ValidationAlgorithm {
+	    +isGoodResult
+	    +execute()
+	    +explainPossibleResults()$
+	    +explainResult(result)$
+    }
+
+    class VerificationNonAdditiveConcatenation {
+	    +databaseAuditor
+	    +execute()
+    }
+
+    class VerificationBCNF {
+	    +databaseAuditor
+	    +execute()
+    }
+
+    class Client {
+    }
+
+	<<Abstract>> DatabaseSchemaGenerator
+	<<Abstract>> ValidationAlgorithm
+
+	note for DatabaseAuditor "Responsable de abstraer la interaccion con algoritmos de validacion (ValidationAlgorithm) y generacion de esquemas(DatabaseSchemaGenerator)"
+	note for DatabaseSchemaGenerator "Genera los Schema necesarios para la aplicacion de los algoritmos"
+	note for SchemaFromDBUsingName "Genera Schema por a partir de archivos .json"
+	note for SchemaFromDBUsingName "Genera Schema a partir de la base de datos 
+    por medio de convenciones de nombres en la base de datos, un archivo de configuracion .env y .json"
+	note for Schema "Proporciona una 
+    estructura de datos que contine la informacion
+    que utiilizaran los algoritmos de validacion"
+	note for ValidationAlgorithm "Ejecuta un algorirmo sobre la base de datos y registra sus resultados en Report"
+	note for VerificationNonAdditiveConcatenation "Encapsula y amplia el algoritmo de Verificación 
+    de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI 
+    y SHAMKANT B. NAVATHE"
+	note for VerificationBCNF "Encapsula y amplia el Algoritmo para validar que una relacion
+    este en BCNF en base a la definicion presentado por RAMEZ ELMASRI y SHAMKANT B. NAVATHE"
+	note for Report "Encapsula la logica para la generacion de informes"
 
     DatabaseAuditor ..> DatabaseSchemaGenerator
     DatabaseAuditor ..> Report
     DatabaseAuditor ..> Schema
-
-
-    class DatabaseSchemaGenerator{
-        <<Abstract>>
-        +databaseAuditor
-        +generate()
-    }
-
-    note for DatabaseSchemaGenerator "Proporciona la interfaz estrategia 
-    que es común a todas las estrategias concretas 
-    para la generacion de los 
-    esquemas de la base de datos"
-
     DatabaseSchemaGenerator <|-- SchemaFromDBUsingName
-    DatabaseSchemaGenerator <|-- SchemaFromJSON 
-    
-
-    class Schema{
-
-    }
-
-    class SchemaFromJSON{
-        +databaseAuditor
-        +generate()
-    }
-
-    class SchemaFromDBUsingName{
-        +databaseAuditor
-        +generate()
-    }
-
-    SchemaFromDBUsingName ..> Schema
-    SchemaFromJSON ..> Schema
-
-    note for Schema "Proporciona una 
-    estructura de datos que contine la informacion
-    que utiilizaran los algoritmos de validacion"
-
-
-    note for SchemaFromDBUsingName "Es una de las estrategias concretas 
-    que genera los esquemas por medio de de las 
-    convenciones de nombres de la base de datos"
-
+    DatabaseSchemaGenerator <|-- SchemaFromJSON
+    DatabaseSchemaGenerator ..> Schema
     DatabaseAuditor ..> ValidationAlgorithm
-
-    note for ValidationAlgorithm "Proporciona la interfaz estrategia 
-    que es común a todas las estrategias concretas 
-    para la generacion de las 
-    validaciones de la base de datos"
-
-    class ValidationAlgorithm{
-        <<Abstract>>
-        +execute()
-        +explainPossibleResults()$
-        +explainResult(result)$
-    }
-
     ValidationAlgorithm <|-- VerificationNonAdditiveConcatenation
     ValidationAlgorithm <|-- VerificationBCNF
-
     Report <.. VerificationNonAdditiveConcatenation
     Report <.. VerificationBCNF
-
-    class Report{
-        +addVerification($element,$result,$message)
-    }
-
-    class VerificationNonAdditiveConcatenation{
-        +databaseAuditor
-        +execute()
-    }
-
-
-    note for VerificationNonAdditiveConcatenation "Encapsula el Algoritmo 11.1 de Verificación 
-de la propiedad de concatenación no aditiva propuesto por RAMEZ ELMASRI 
-y SHAMKANT B. NAVATHE"
-
-    class VerificationBCNF{
-        +databaseAuditor
-        +execute()
-    }
-
-    note for VerificationBCNF "Encapsula el Algoritmo que valida que cada 
-    descomposicion posea la BCNF 
-    en base a la definicion presentada 
-    por RAMEZ ELMASRI y SHAMKANT B. NAVATHE"
-
     DatabaseAuditor <.. Client
 
-    class Client{
-
-    }
 
 ```
 
@@ -896,7 +871,7 @@ Para el caso de la validacion de la BCNF podemos usar el
 
 ## Documentacion
 
-El paquete data-auditor permite realizar una serie de validaciones y mejoras a la calidad del diseño de una base de datos como la comprobacion de formas normales, verificación de la propiedad de concatenación no aditiva, etc.
+El paquete database-auditor permite realizar una serie de validaciones y mejoras a la calidad del diseño de una base de datos como la comprobacion de formas normales, verificación de la propiedad de concatenación no aditiva, etc.
 
 ### Convenciones usadas durante la docuemntacion
 
