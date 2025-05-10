@@ -1,14 +1,5 @@
 {
-    "universalRelationship": [
-        "person_id",
-        "person_name",
-        "person_supervisor_id",
-        "person_supervisaddo_id",
-        "person_person_id",
-        "score_id",
-        "score_name"
 
-    ],
     "decompositionsByTable":{
        "persons" : [
             "person_id",

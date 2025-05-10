@@ -6,13 +6,13 @@ use Exception;
 class Schema {
 
 
-    public $universalRelationship;
-    public $decompositionsByTable;
-    public $functionalDependencies;
+    public array $universalRelationship;
+    public array $decompositionsByTable;
+    public array $functionalDependencies;
 
 
-    public $primaryKeysByTable;
-    public $foreignKeysByTable;
+    public array $primaryKeysByTable;
+    public array $foreignKeysByTable;
 
 
     public $joinsClusters;
@@ -512,7 +512,7 @@ class Schema {
         return true;
     }
 
-    public static function union($set,$addSet): Array{
+    public static function union(array $set,array $addSet): Array{
         foreach($addSet as $x){
             if(!in_array($x,$set)){
                 $set[]=$x;

@@ -50,7 +50,7 @@ class VerificationBCNFTest extends TestCase
     
         $databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= 
             new SchemaFromJSON(
-                $databaseAuditor, __DIR__ . '/../../BCNFExampleDB.json'
+                $databaseAuditor, __DIR__ . '/../../jsonFilesDBExamples/BCNFExampleDB.json'
             );
 
         $databaseAuditor->validationAlgorithms['VerificationBCNF'] = new VerificationBCNF($databaseAuditor);
@@ -86,7 +86,7 @@ class VerificationBCNFTest extends TestCase
     
         $databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= 
             new SchemaFromJSON(
-                $databaseAuditor, __DIR__ . '/../../notBCNFExampleDB.json'
+                $databaseAuditor, __DIR__ . '/../../jsonFilesDBExamples/notBCNFExampleDB.json'
             );
 
         $databaseAuditor->validationAlgorithms['VerificationBCNF'] = new VerificationBCNF($databaseAuditor);

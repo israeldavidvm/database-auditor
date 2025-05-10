@@ -185,19 +185,19 @@ class MenuCommand extends Command
 
         switch ($seleccion) {
             case 'Base de datos que esta BCNF':
-                $path = './BCNFExampleDB.json';
+                $path = './jsonFilesDBExamples/BCNFExampleDB.json';
                 break;
             case 'Base de datos que no esta en BCNF':
-                $path = './notBCNFExampleDB.json';
+                $path = './jsonFilesDBExamples/notBCNFExampleDB.json';
                 break;
             case 'Base de datos que posee la propiedad de concatenación sin pérdida (no aditiva)':
-                $path = './notAditiveExampleDB.json';
+                $path = './jsonFilesDBExamples/notAditiveExampleDB.json';
                 break;
             case 'Base de datos que no posee la propiedad de concatenación sin pérdida (no aditiva)':
-                $path = './AditiveExampleDB.json';
+                $path = './jsonFilesDBExamples/AditiveExampleDB.json';
                 break;
             case 'Base de datos con entidades repetidas':
-                $path='./RepeatedReferencedExampleDB.json';
+                $path='./jsonFilesDBExamples/RepeatedReferencedExampleDB.json';
                 break;
             case 'Salir':
                 $output->writeln('Saliendo del menú.');

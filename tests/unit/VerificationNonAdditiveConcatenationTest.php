@@ -42,7 +42,7 @@ class VerificationNonAdditiveConcatenationTest extends TestCase
     
         $databaseAuditor->databaseSchemaGenerators['SchemaFromJSON']= 
             new SchemaFromJSON(
-                $databaseAuditor, __DIR__ . '/../../notAditiveExampleDB.json'
+                $databaseAuditor, __DIR__ . '/../../jsonFilesDBExamples/notAditiveExampleDB.json'
             );
 
         $databaseAuditor->validationAlgorithms['VerificationNonAdditiveConcatenation'] = new VerificationNonAdditiveConcatenation($databaseAuditor);

@@ -72,7 +72,7 @@
 
 ## ¡Asegura la calidad de tus bases de datos con database-auditor!
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 ¿Quieres asegurarte de la calidad de tu base de datos? 
 
@@ -176,7 +176,7 @@ Ejemplo: La palabra "libro" no termina en "s" y no termina en "y" precedida de c
 Ejemplo: La palabra "mesa" no termina en "s" y no termina en "y" precedida de consonante. Por lo tanto, se le añade "s", resultando en "mesas".
 Ejemplo (donde NO se aplica la regla "-y" a "-ies"): La palabra "grey" no termina en "s" y termina en "ey" (vocal + y), por lo que se le añade "s", resultando en "greys" (siguiendo la regla por defecto).
 
-5. Las dependencias funcionales deben ser especificadas usando la notacion de attributos completamente cualificado la cual esta dada por 
+5. En los archivos.json todo atributo debe ser referenciado usando la notacion de attributos completamente cualificado la cual esta dada por 
 
 ```
 <TablaReferenciadaEnSingular>[_<ROL>][_<Atributo>]
@@ -199,6 +199,10 @@ de forma que una dependencia funcional debe especificarse
     "y"=>["persona_nombre"."persona_edad"]
 ]
 ```
+
+#### Excepcion
+
+Existe la posibilidad de probar una base de datos que no cumpla con las convenciones por medio de los archivos json siempre y cuando todo atributo sea unico. Sin embargo esta es una caracteristica que posiblemente sea deprecada en el futuro. Recomendamos usar la notacion anteriormnete comentada
 
 ### Requisitos 
 
@@ -240,47 +244,39 @@ DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE=./functionDepedencies.json
 
 Un archivo donde se van a configurar las depedencias funcionales de tu base de datos, notese que el nombre viene de la variable de entorno DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE escrita en tu archivo .env
 
-Vease la notacion en la seccion de advertencias pero un ejemplo seria el siguiente
+Vease la notacion en la seccion de advertencias pero un ejemplo para una base de datos optenida desde el archivo .env seria el siguiente
 
 
 ```
 {
-    "functionalDependencies": [
+ "functionalDependencies": [
         {
             "x": [
-                "dni"
+                "score_id"
             ],
             "y": [
-                "nombreE"
+                "score_name"
             ]
         },
         {
             "x": [
-                "nombreProyecto"
+                "person_id"
             ],
             "y": [
-                "ubicacionProyecto"
+                "person_name"
             ]
         },
         {
             "x": [
-                "numProyecto"
+                "person_person_id"
             ],
             "y": [
-                "nombreProyecto",
-                "ubicacionProyecto"
-            ]
-        },
-        {
-            "x": [
-                "dni",
-                "numProyecto"
-            ],
-            "y": [
-                "horas"
+                "person_supervisor_id",
+                "person_supervisaddo_id",
+                "score_id"
             ]
         }
-    ]
+    ],
 }
 ```
 
@@ -327,20 +323,20 @@ Help:
 
 ##### Capture menu principal
 
-![Capture Menu principal](image.png)
+![Capture Menu principal](images/image.png)
 
 ##### Capture menu probar bases de datos de ejemplo
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
 ##### Capture menu probar bases de datos personalizada
 
 
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 ##### Ejemplo resultados analisis 
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
 ```
 Elementos Revisados : Resultados Algoritmos aplicados
@@ -551,7 +547,7 @@ Basicamente el programa funciona con los siguientes pasos
 
 En el siguiente diagrama de clases se veran las abstracciones clave en el sistema, sus interaciones  responsabilidades.
 
-![alt text](image-4.png)
+![alt text](images/image-4.png)
 
 ``` mermaid
 ---

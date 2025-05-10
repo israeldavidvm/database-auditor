@@ -30,13 +30,6 @@ class SchemaFromJSON extends DatabaseSchemaGenerator
 
         $baseSchema=$this->databaseAuditor->baseSchema;
 
-        if(isset($data['universalRelationship'])){
-            // echo "universalRelationship";
-            $baseSchema->universalRelationship=array_merge(
-                $baseSchema->universalRelationship,
-                $data['universalRelationship']
-            );
-        }
         if(isset($data['decompositionsByTable'])){
             // echo "descompositions";
             $baseSchema->decompositionsByTable=array_merge(
@@ -44,6 +37,15 @@ class SchemaFromJSON extends DatabaseSchemaGenerator
                 $data['decompositionsByTable']
             );
         }
+
+        foreach ($baseSchema->decompositionsByTable as $descomposition) {
+              
+            $baseSchema->universalRelationship=Schema::union(
+                $baseSchema->universalRelationship,
+                $descomposition
+            );
+        }
+
         if(isset($data['functionalDependencies'])){
             // echo "functionalDependencies";
             $baseSchema->functionalDependencies=array_merge(

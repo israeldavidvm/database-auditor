@@ -25,7 +25,7 @@ class SchemaFromJSONTest extends TestCase
     {
         $databaseAuditor = new DatabaseAuditor;
 
-        $pathJson = __DIR__ . '/../../BCNFExampleDB.json';
+        $pathJson = __DIR__ . '/../../jsonFilesDBExamples/BCNFExampleDB.json';
         $schemaFromJson = new SchemaFromJSON($databaseAuditor, $pathJson);
         $schemaFromJson->generate();
 

@@ -1,0 +1,74 @@
+{
+    "decompositionsByTable":{
+       "empleados" : [
+            "empleado_dni",
+            "empleado_nombre"
+        ],
+        "proyectos" : [
+            "proyecto_num",
+            "proyecto_nombre",
+            "proyecto_ubicacion"
+        ],
+        "asignaciones" : [
+            "empleado_dni",
+            "proyecto_num",
+            "asignacione_horas"
+        ]
+    },
+    "functionalDependencies": [
+        {
+            "x": [
+                "empleado_dni"
+            ],
+            "y": [
+                "empleado_nombre"
+            ]
+        },
+        {
+            "x": [
+                "proyecto_nombre"
+            ],
+            "y": [
+                "proyecto_ubicacion"
+            ]
+        },
+        {
+            "x": [
+                "proyecto_num"
+            ],
+            "y": [
+                "proyecto_nombre",
+                "proyecto_ubicacion"
+            ]
+        },
+        {
+            "x": [
+                "asignacione_id",
+                 "empleado_dni",
+                "proyecto_num"
+                
+            ],
+            "y": [
+                "asignacione_horas"
+            ]
+        },
+        {
+            "x": [
+                "empleado_dni",
+                "proyecto_num"
+            ],
+            "y": [
+                "asignacione_horas"
+            ]
+        }
+    ],
+    "joinsClusters": [
+        
+        [
+            "empleados",
+            "proyectos",
+            "asignaciones"
+        ]           
+
+    ]
+}

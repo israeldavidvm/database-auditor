@@ -110,7 +110,7 @@ class SchemaTest extends TestCase
     public function testGenerateJoinsClustersFromJson(
     ): void {
 
-        $path='./RepeatedReferencedExampleDB.json';
+        $path='./jsonFilesDBExamples/RepeatedReferencedExampleDB.json';
 
         $this->databaseAuditor = new DatabaseAuditor;
 

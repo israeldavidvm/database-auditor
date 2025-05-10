@@ -71,7 +71,7 @@
 [Readme version in English](./README-EN.md)
 ## Ensure the Quality of Your Databases with database-auditor!
 
-![alt text](image.png)
+![alt text](images/image.png)
 
 Do you want to ensure the quality of your database?
 
@@ -174,7 +174,7 @@ Example: The word "book" does not end in "s" and does not end in "y" preceded by
 Example: The word "table" does not end in "s" and does not end in "y" preceded by a consonant. Therefore, "s" is added, resulting in "mesas."
 Example (where the "-y" rule does NOT apply to "-ies"): The word "grey" does not end in "s" and ends in "ey" (vowel + y), so "s" is added, resulting in "greys" (following the default rule).
 
-5. Functional dependencies must be specified using the fully qualified attribute notation, which is given by
+5. In the .json files, every attribute must be referenced using the fully qualified attribute notation, which is given by
 
 ```
 <SingularReferencedTable>[_<ROLE>][_<Attribute>]
@@ -236,45 +236,40 @@ DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE=./functionDepedencies.json
 
 A file where you will configure the functional dependencies of your database. Note that the name comes from the DATA_AUDITOR_PATH_FUNCTIONAL_DEPENDENCIES_JSON_FILE environment variable written in your .env file.
 
+See the notation in the warnings section but an example for a database obtained from the .env file would be the following
+
 ```
 {
-"functionalDependencies": [
-{
-"x": [
-"id"
-],
-"y": [
-"eName"
-]
-},
-{
-"x": [
-"projectName"
-],
-"y": [
-"projectLocation"
-]
-},
-{
-"x": [
-"projectNumber"
-],
-"y": [
-"projectName",
-"projectLocation"
-]
-},
-{
-"x": [
-"id",
-"projectNumber"
-],
-"y": [
-"hours"
-]
+ "functionalDependencies": [
+        {
+            "x": [
+                "score_id"
+            ],
+            "y": [
+                "score_name"
+            ]
+        },
+        {
+            "x": [
+                "person_id"
+            ],
+            "y": [
+                "person_name"
+            ]
+        },
+        {
+            "x": [
+                "person_person_id"
+            ],
+            "y": [
+                "person_supervisor_id",
+                "person_supervisaddo_id",
+                "score_id"
+            ]
+        }
+    ],
 }
-]
-}
+
 ```
 
 ### Using from the command line interface
@@ -319,20 +314,20 @@ This command displays an interactive menu and executes actions based on the user
 
 ##### Capture main menu
 
-![Capture Main Menu](image.png)
+![Capture Main Menu](images/image.png)
 
 ##### Capture menu test example databases
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
 
 ##### Capture menu test custom databases
 
 
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 ##### Analysis Results Example
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 
 ```
 Elementos Revisados : Resultados Algoritmos aplicados
